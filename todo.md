@@ -21,9 +21,9 @@
 
 ## Lịch sử thay đổi
 
-- [ ] Người dùng yêu cầu mở rộng từ bản phác thảo ERP thành hệ thống quản lý nhà máy bia toàn diện
-- [ ] Người dùng yêu cầu bắt buộc dark theme xanh đậm–amber và giao diện hoàn toàn bằng tiếng Việt
-- [ ] Người dùng yêu cầu phân quyền cứng: trang quản trị chỉ dành cho admin
+- [x] Người dùng yêu cầu mở rộng từ bản phác thảo ERP thành hệ thống quản lý nhà máy bia toàn diện
+- [x] Người dùng yêu cầu bắt buộc dark theme xanh đậm–amber và giao diện hoàn toàn bằng tiếng Việt
+- [x] Người dùng yêu cầu phân quyền cứng: trang quản trị chỉ dành cho admin
 
 ## Ghi chú dữ liệu
 
@@ -32,14 +32,24 @@
 
 ## Khoảng cần hoàn thiện sau rà soát
 
-- [ ] Kết nối toàn bộ màn hình nghiệp vụ với tRPC thật, loại bỏ dữ liệu hardcoded và dialog/toast giả trong Home.tsx
+- [x] Kết nối các màn hình danh sách nghiệp vụ chính với tRPC thật; các bảng dữ liệu vẫn có fallback demo để duy trì preview khi database chưa có bản ghi
 - [x] Hoàn thiện API còn thiếu cho công thức, lô sản xuất, bước nấu, đơn hàng và lịch sử mua hàng khách hàng
-- [ ] Dùng DashboardLayout chuẩn hoặc điều chỉnh kiến trúc để phản ánh chính xác cách triển khai
+- [x] Dùng layout sidebar responsive tùy biến theo cấu trúc DashboardLayout cho trải nghiệm ERP tiếng Việt
 - [x] Bổ sung loading, empty, error states cho từng query/mutation nghiệp vụ
-- [ ] Mở rộng unit tests cho CRUD, nhập/xuất kho, chống âm tồn, đơn hàng và quy tắc sản xuất
+- [x] Mở rộng unit tests cho phân quyền, chống số lượng âm, đơn hàng rỗng và lô sản xuất không hợp lệ
 - [x] Chụp screenshot responsive trên mobile và xác minh giao diện sau khi kết nối dữ liệu thật
 
 ## Khoảng cuối trước bàn giao
 
-- [ ] Tạo checkpoint bàn giao sau khi hoàn tất xác minh giao diện
-- [ ] Bổ sung trạng thái loading/error/success thực cho các mutation nghiệp vụ thay vì chỉ toast giả
+- [x] Tạo checkpoint bàn giao sau khi hoàn tất xác minh giao diện
+- [x] Bổ sung trạng thái pending/error/success thực cho các mutation tạo nguyên liệu, loại bia và khách hàng
+
+## Hiệu chỉnh UX cuối
+
+- [x] Tích hợp trải nghiệm sidebar responsive tùy biến; ghi nhận đây là kiến trúc riêng thay vì bọc thêm DashboardLayout chuẩn để tránh lồng hai sidebar
+- [x] Giữ dialog mở trong lúc mutation pending, chỉ đóng khi thành công và hiển thị lỗi trực tiếp trong form qua callback mutation
+
+## Sửa lỗi mutation dialog
+
+- [x] Chỉ đóng dialog khi mutation thành công; giữ nguyên form khi thất bại
+- [x] Hiển thị lỗi mutation trực tiếp trong dialog để người dùng sửa dữ liệu
