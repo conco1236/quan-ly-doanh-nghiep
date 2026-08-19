@@ -327,3 +327,23 @@
 - [x] Hiển thị thông báo thành công kèm phạm vi và số dòng đã xuất
 - [x] Hiển thị thông báo thất bại thân thiện khi tạo hoặc tải file lỗi
 - [x] Bổ sung test trạng thái xuất và kiểm tra TypeScript/build/responsive
+
+## Mở rộng quản trị doanh nghiệp
+
+- [ ] Thiết kế mô hình dữ liệu liên module và ma trận quyền nghiệp vụ
+- [ ] Triển khai Thu–Chi, Công nợ và đối soát POS
+- [ ] Triển khai Mua hàng và quản lý Nhà cung cấp
+- [ ] Triển khai Định mức, Giá vốn và hiệu quả sản xuất
+- [ ] Triển khai Bảo trì thiết bị và lịch sử sự cố
+- [ ] Nâng cấp Chấm công, bảng công tháng và phê duyệt
+- [ ] Mở rộng Workflow, thông báo và Dashboard điều hành
+- [ ] Hoàn thiện backup, giám sát, hiệu năng và kiểm thử tích hợp
+- [ ] Kiểm tra toàn hệ thống và lưu checkpoint bàn giao theo giai đoạn
+
+### Thu–Chi và Công nợ
+
+- [x] Tạo bảng phiếu thu/chi và danh mục tài khoản quỹ
+- [x] Tạo bảng công nợ phải thu/phải trả và đối soát đơn POS
+- [x] Thêm API tRPC list/create/update/settle với owner, access mode và audit
+- [x] Thay placeholder Thu chi bằng giao diện sổ quỹ, bộ lọc và form nghiệp vụ
+- [x] Bổ sung test validation, quyền và tổng hợp số dư tài chính

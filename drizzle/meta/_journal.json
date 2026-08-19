@@ -50,6 +50,13 @@
       "when": 1787116431493,
       "tag": "0006_smiling_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787121083326,
+      "tag": "0007_productive_captain_cross",
+      "breakpoints": true
     }
   ]
 }

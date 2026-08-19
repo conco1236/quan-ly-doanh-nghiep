@@ -260,6 +260,66 @@ export const qcResults = mysqlTable("qc_results", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, table => ({ batchIdx: index("qc_results_batch_idx").on(table.batchId), statusIdx: index("qc_results_status_idx").on(table.status) }));
 
+export const financeAccounts = mysqlTable("finance_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 40 }).notNull().unique(),
+  name: varchar("name", { length: 160 }).notNull(),
+  accountType: mysqlEnum("accountType", ["cash", "bank", "other"]).default("cash").notNull(),
+  openingBalance: decimal("openingBalance", { precision: 16, scale: 2 }).default("0").notNull(),
+  currentBalance: decimal("currentBalance", { precision: 16, scale: 2 }).default("0").notNull(),
+  status: mysqlEnum("status", ["active", "inactive"]).default("active").notNull(),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ ownerIdx: index("finance_accounts_created_by_idx").on(table.createdBy), statusIdx: index("finance_accounts_status_idx").on(table.status) }));
+
+export const financeTransactions = mysqlTable("finance_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  transactionCode: varchar("transactionCode", { length: 80 }).notNull().unique(),
+  accountId: int("accountId").notNull(),
+  type: mysqlEnum("type", ["income", "expense"]).notNull(),
+  category: varchar("category", { length: 120 }).notNull(),
+  amount: decimal("amount", { precision: 16, scale: 2 }).notNull(),
+  transactionDate: timestamp("transactionDate").notNull(),
+  counterparty: varchar("counterparty", { length: 180 }),
+  referenceType: varchar("referenceType", { length: 80 }),
+  referenceId: int("referenceId"),
+  status: mysqlEnum("status", ["draft", "posted", "cancelled"]).default("posted").notNull(),
+  note: text("note"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ accountIdx: index("finance_transactions_account_idx").on(table.accountId), typeDateIdx: index("finance_transactions_type_date_idx").on(table.type, table.transactionDate), statusIdx: index("finance_transactions_status_idx").on(table.status), ownerIdx: index("finance_transactions_created_by_idx").on(table.createdBy) }));
+
+export const receivables = mysqlTable("receivables", {
+  id: int("id").autoincrement().primaryKey(),
+  documentCode: varchar("documentCode", { length: 80 }).notNull().unique(),
+  customerId: int("customerId"),
+  orderId: int("orderId"),
+  dueDate: timestamp("dueDate"),
+  amount: decimal("amount", { precision: 16, scale: 2 }).notNull(),
+  paidAmount: decimal("paidAmount", { precision: 16, scale: 2 }).default("0").notNull(),
+  status: mysqlEnum("status", ["open", "partial", "paid", "cancelled"]).default("open").notNull(),
+  note: text("note"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ customerIdx: index("receivables_customer_idx").on(table.customerId), orderIdx: index("receivables_order_idx").on(table.orderId), statusIdx: index("receivables_status_idx").on(table.status), ownerIdx: index("receivables_created_by_idx").on(table.createdBy) }));
+
+export const payables = mysqlTable("payables", {
+  id: int("id").autoincrement().primaryKey(),
+  documentCode: varchar("documentCode", { length: 80 }).notNull().unique(),
+  supplierName: varchar("supplierName", { length: 180 }).notNull(),
+  dueDate: timestamp("dueDate"),
+  amount: decimal("amount", { precision: 16, scale: 2 }).notNull(),
+  paidAmount: decimal("paidAmount", { precision: 16, scale: 2 }).default("0").notNull(),
+  status: mysqlEnum("status", ["open", "partial", "paid", "cancelled"]).default("open").notNull(),
+  note: text("note"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ supplierIdx: index("payables_supplier_idx").on(table.supplierName), statusIdx: index("payables_status_idx").on(table.status), ownerIdx: index("payables_created_by_idx").on(table.createdBy) }));
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Employee = typeof employees.$inferSelect;
@@ -272,4 +332,8 @@ export type Customer = typeof customers.$inferSelect;
 export type SalesOrder = typeof salesOrders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type WorkflowTask = typeof workflowTasks.$inferSelect;
+export type FinanceAccount = typeof financeAccounts.$inferSelect;
+export type FinanceTransaction = typeof financeTransactions.$inferSelect;
+export type Receivable = typeof receivables.$inferSelect;
+export type Payable = typeof payables.$inferSelect;
 export type StoredFile = typeof storedFiles.$inferSelect;
