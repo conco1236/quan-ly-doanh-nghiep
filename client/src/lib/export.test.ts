@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary, filterByDepartments } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -32,6 +32,12 @@ describe("native XLSX workbook", () => {
 });
 
 describe("department filters", () => {
+  it("maps office and production presets to existing department names", () => {
+    const departments = ["Hành chính", "Kế toán", "Nấu bia", "KCS / QC", "Kho nguyên liệu", "Không liên quan"];
+    expect(departmentsForPreset("office", departments)).toEqual(["Hành chính", "Kế toán"]);
+    expect(departmentsForPreset("production", departments)).toEqual(["Nấu bia", "KCS / QC", "Kho nguyên liệu"]);
+    expect(departmentsForPreset("office", ["Bán hàng"])).toEqual(["Bán hàng"]);
+  });
   const people = [{ id: 1, fullName: "A", department: "Kho" }, { id: 2, fullName: "B", department: "Sản xuất" }, { id: 3, fullName: "C", department: null }];
   const items = [{ employeeId: 1, value: "kho" }, { employeeId: 2, value: "sx" }, { employeeId: 3, value: "trống" }];
   it("filters selected departments and keeps all rows when no selection", () => {

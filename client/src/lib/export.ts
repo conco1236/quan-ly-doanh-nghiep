@@ -39,7 +39,10 @@ export type EmployeeSummaryPerson = { id: number; employeeCode?: string | null; 
 export const employeeMonthlySummaryHeaders = ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công", "Có mặt", "Đi muộn", "Vắng", "Ngày lễ", "Nghỉ phép theo công", "Ngày nghỉ được duyệt", "Phép năm đã duyệt", "Ốm đã duyệt", "Không lương đã duyệt", "Khác đã duyệt", "Đơn chờ duyệt"];
 export const departmentChartHeaders = ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"];
 
-export function filterByDepartments<T extends { employeeId: number }>(items: T[], people: EmployeeSummaryPerson[], departments: string[]): T[] { if (!departments.length) return items; const selected = new Set(departments); return items.filter(item => selected.has(people.find(person => person.id === item.employeeId)?.department || "Chưa phân phòng ban")); }
+export type DepartmentPreset = "all" | "office" | "production" | "custom";
+const departmentPresetKeywords: Record<Exclude<DepartmentPreset, "all" | "custom">, string[]> = { office: ["văn phòng", "hành chính", "nhân sự", "kế toán", "tài chính", "kinh doanh", "bán hàng", "sales", "marketing", "quản trị"], production: ["sản xuất", "nấu", "brew", "kcs", "qc", "vận hành", "đóng gói", "kỹ thuật", "kho"] };
+export function departmentsForPreset(preset: DepartmentPreset, departments: string[]): string[] { if (preset === "all" || preset === "custom") return departments; return departments.filter(department => departmentPresetKeywords[preset].some(keyword => department.toLocaleLowerCase("vi").includes(keyword))); }
+export function filterByDepartments<T extends { employeeId: number }>(items: T[], people: EmployeeSummaryPerson[], departments: string[], preset: DepartmentPreset = departments.length ? "custom" : "all"): T[] { if (preset === "all") return items; const selected = new Set(departments); return items.filter(item => selected.has(people.find(person => person.id === item.employeeId)?.department || "Chưa phân phòng ban")); }
 
 export function buildDepartmentChartRows(summaryRows: ExportCell[][]): ExportCell[][] {
   const groups = new Map<string, { work: number; leave: number }>();

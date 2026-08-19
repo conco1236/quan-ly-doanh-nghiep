@@ -311,3 +311,11 @@
 - [x] Hiển thị số phòng ban và trạng thái bộ lọc trước khi xuất
 - [x] Bổ sung test lọc phòng ban, chọn Tất cả và dữ liệu rỗng
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Preset bộ lọc phòng ban
+
+- [x] Định nghĩa ánh xạ preset Khối văn phòng và Khối sản xuất theo tên phòng ban
+- [x] Thêm state preset và cho phép chuyển về tùy chỉnh thủ công
+- [x] Hiển thị nút preset cùng trạng thái đang áp dụng trong giao diện
+- [x] Bổ sung test ánh xạ preset, preset không có dữ liệu và chọn Tất cả
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
