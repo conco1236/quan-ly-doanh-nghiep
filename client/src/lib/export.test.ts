@@ -20,6 +20,10 @@ describe("native XLSX workbook", () => {
     expect(workbook.SheetNames).toEqual(["Cham cong", "Nghi phep"]);
     expect(workbook.Sheets["Cham cong"]["A1"].v).toBe("Nhân viên");
     expect(workbook.Sheets["Nghi phep"]["B2"].v).toBe(2);
+    expect(workbook.Sheets["Cham cong"]["A1"].s.font.bold).toBe(true);
+    expect(workbook.Sheets["Cham cong"]["!cols"][0].wch).toBeGreaterThan(10);
+    expect(workbook.Sheets["Cham cong"]["!freeze"].ySplit).toBe(1);
+    expect(workbook.Sheets["Nghi phep"]["B2"].z).toBe("0");
   });
 });
 

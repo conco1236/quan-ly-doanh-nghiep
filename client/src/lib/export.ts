@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 
 export type ExportCell = string | number | null | undefined;
 
@@ -48,10 +48,38 @@ export function buildEmployeeMonthlySummary(attendance: AttendanceSummaryInput[]
   return Array.from(byKey.values()).sort((a, b) => a.month.localeCompare(b.month) || a.employeeId - b.employeeId).map(row => { const person = people.find(item => item.id === row.employeeId); return [person?.fullName ?? `Nhân viên #${row.employeeId}`, person?.employeeCode ?? "", row.month, row.work, row.present, row.late, row.absent, row.holiday, row.attendanceLeave, row.approvedLeave, row.annual, row.sick, row.unpaid, row.other, row.pending]; });
 }
 
+const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" }, name: "Aptos" }, fill: { fgColor: { rgb: "102A43" } }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: { bottom: { style: "thin", color: { rgb: "D6A72D" } } } };
+const bodyStyle = { font: { name: "Aptos", color: { rgb: "243B53" } }, alignment: { vertical: "center" } };
+
+function cellDisplayValue(value: ExportCell) { return String(value ?? ""); }
+function columnWidth(header: string, values: ExportCell[]) { const maxLength = Math.max(header.length, ...values.map(value => cellDisplayValue(value).length)); return Math.min(32, Math.max(10, maxLength + 2)); }
+function applySheetFormatting(worksheet: any, sheet: ExcelSheet) {
+  const totalRows = sheet.rows.length + 1;
+  const totalColumns = sheet.headers.length;
+  for (let column = 0; column < totalColumns; column += 1) {
+    const header = sheet.headers[column];
+    const columnValues = sheet.rows.map(row => row[column]);
+    worksheet[`${XLSX.utils.encode_col(column)}1`].s = headerStyle;
+    worksheet[`${XLSX.utils.encode_col(column)}1`].t = "s";
+    for (let row = 2; row <= totalRows; row += 1) {
+      const address = `${XLSX.utils.encode_col(column)}${row}`;
+      if (!worksheet[address]) continue;
+      worksheet[address].s = { ...bodyStyle, alignment: { ...bodyStyle.alignment, horizontal: typeof worksheet[address].v === "number" ? "right" : "left" } };
+      if (/ngày|tháng/i.test(header)) worksheet[address].z = "dd/mm/yyyy";
+      if (/số ngày|tổng ngày|có mặt|đi muộn|vắng|ngày lễ|nghỉ phép|đơn chờ|giờ/i.test(header) && typeof worksheet[address].v === "number") worksheet[address].z = Number.isInteger(worksheet[address].v) ? "0" : "0.00";
+    }
+  }
+  worksheet["!cols"] = sheet.headers.map((header, index) => ({ wch: columnWidth(header, sheet.rows.map(row => row[index])) }));
+  worksheet["!rows"] = [{ hpt: 30 }];
+  worksheet["!freeze"] = { xSplit: 0, ySplit: 1, topLeftCell: "A2", activePane: "bottomLeft", state: "frozen" };
+  worksheet["!autofilter"] = { ref: `A1:${XLSX.utils.encode_col(totalColumns - 1)}${totalRows}` };
+}
+
 export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
   const workbook = XLSX.utils.book_new();
   for (const sheet of sheets) {
     const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows]);
+    applySheetFormatting(worksheet, sheet);
     XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name.slice(0, 31));
   }
   return workbook;

@@ -270,3 +270,11 @@
 - [x] Thêm sheet Tổng hợp vào workbook XLSX native
 - [x] Bổ sung test nhóm dữ liệu nhiều nhân viên/tháng và trường hợp rỗng
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Định dạng XLSX báo cáo HR
+
+- [x] In đậm và tô màu hàng tiêu đề, cố định hàng đầu mỗi sheet
+- [x] Tự động căn chỉnh độ rộng cột theo nội dung với giới hạn hợp lý
+- [x] Định dạng ngày, số ngày và số giờ theo kiểu Excel phù hợp
+- [x] Bổ sung test kiểm tra style, width, freeze pane và number format
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
