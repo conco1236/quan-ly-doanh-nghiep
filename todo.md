@@ -330,15 +330,15 @@
 
 ## Mở rộng quản trị doanh nghiệp
 
-- [ ] Thiết kế mô hình dữ liệu liên module và ma trận quyền nghiệp vụ
-- [ ] Triển khai Thu–Chi, Công nợ và đối soát POS
+- [x] Thiết kế mô hình dữ liệu liên module và ma trận quyền nghiệp vụ
+- [x] Triển khai Thu–Chi, Công nợ và đối soát POS
 - [x] Triển khai Mua hàng và quản lý Nhà cung cấp
 - [x] Triển khai Định mức, Giá vốn và hiệu quả sản xuất
 - [x] Triển khai Bảo trì thiết bị và lịch sử sự cố
-- [ ] Nâng cấp Chấm công, bảng công tháng và phê duyệt
-- [ ] Mở rộng Workflow, thông báo và Dashboard điều hành
-- [ ] Hoàn thiện backup, giám sát, hiệu năng và kiểm thử tích hợp
-- [ ] Kiểm tra toàn hệ thống và lưu checkpoint bàn giao theo giai đoạn
+- [x] Nâng cấp Chấm công, bảng công tháng và phê duyệt
+- [x] Mở rộng Workflow, thông báo và Dashboard điều hành
+- [x] Hoàn thiện backup, giám sát, hiệu năng và kiểm thử tích hợp
+- [x] Kiểm tra toàn hệ thống và lưu checkpoint bàn giao theo giai đoạn
 
 ### Thu–Chi và Công nợ
 
@@ -371,3 +371,10 @@
 - [x] Tích hợp cảnh báo thiết bị quá hạn bảo dưỡng
 - [x] Thay khung mở rộng bằng giao diện Bảo trì
 - [x] Bổ sung test lịch hạn, trạng thái và quyền sở hữu
+
+### Chấm công nâng cao
+
+- [x] Thêm helper tổng hợp bảng công theo nhân viên và tháng
+- [x] Thêm API monthlySummary và danh sách đơn chờ duyệt cho quản trị
+- [x] Hiển thị KPI bảng công tháng và cảnh báo đơn nghỉ chờ duyệt
+- [x] Bổ sung test tổng hợp ngày công theo tháng và quyền duyệt

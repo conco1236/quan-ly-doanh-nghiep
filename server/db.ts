@@ -37,6 +37,30 @@ export async function getUserByOpenId(openId: string) {
 export async function listEmployees(ownerId?: number) { const db = await getDb(); return db ? db.select().from(employees).where(ownerId ? eq(employees.createdBy, ownerId) : undefined).orderBy(desc(employees.updatedAt)) : []; }
 export async function listAttendanceRecords(input: { ownerId?: number; employeeId?: number; from?: Date; to?: Date } = {}) { const db = await getDb(); if (!db) return []; const filters = [input.ownerId ? eq(attendanceRecords.createdBy, input.ownerId) : undefined, input.employeeId ? eq(attendanceRecords.employeeId, input.employeeId) : undefined, input.from ? gte(attendanceRecords.workDate, input.from) : undefined, input.to ? lte(attendanceRecords.workDate, input.to) : undefined].filter(Boolean) as any[]; return db.select().from(attendanceRecords).where(filters.length ? and(...filters) : undefined).orderBy(desc(attendanceRecords.workDate)); }
 export async function listLeaveRequests(input: { ownerId?: number; employeeId?: number; status?: "pending" | "approved" | "rejected" | "cancelled" } = {}) { const db = await getDb(); if (!db) return []; const filters = [input.ownerId ? eq(leaveRequests.createdBy, input.ownerId) : undefined, input.employeeId ? eq(leaveRequests.employeeId, input.employeeId) : undefined, input.status ? eq(leaveRequests.status, input.status) : undefined].filter(Boolean) as any[]; return db.select().from(leaveRequests).where(filters.length ? and(...filters) : undefined).orderBy(desc(leaveRequests.startDate)); }
+export function summarizeAttendanceMonthly(records: Array<{ employeeId: number; workDate: Date; status: string; checkIn?: Date | null; checkOut?: Date | null }>, leaves: Array<{ employeeId: number; startDate: Date; endDate: Date; totalDays: string | number; status: string }>, month: string) {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const inMonth = (date: Date) => { const value = new Date(date); return value.getUTCFullYear() === year && value.getUTCMonth() + 1 === monthNumber; };
+  const grouped = new Map<number, { employeeId: number; month: string; workDays: number; present: number; late: number; absent: number; holiday: number; leaveDays: number; approvedLeaveDays: number; pendingLeaveDays: number; workHours: number }>();
+  for (const record of records.filter(row => inMonth(row.workDate))) {
+    const current = grouped.get(record.employeeId) ?? { employeeId: record.employeeId, month, workDays: 0, present: 0, late: 0, absent: 0, holiday: 0, leaveDays: 0, approvedLeaveDays: 0, pendingLeaveDays: 0, workHours: 0 };
+    current.workDays += 1;
+    if (record.status === "present") current.present += 1;
+    if (record.status === "late") { current.present += 1; current.late += 1; }
+    if (record.status === "absent") current.absent += 1;
+    if (record.status === "holiday") current.holiday += 1;
+    if (record.checkIn && record.checkOut) current.workHours += Math.max(0, new Date(record.checkOut).getTime() - new Date(record.checkIn).getTime()) / 3600000;
+    grouped.set(record.employeeId, current);
+  }
+  for (const leave of leaves.filter(row => inMonth(row.startDate) || inMonth(row.endDate))) {
+    const current = grouped.get(leave.employeeId) ?? { employeeId: leave.employeeId, month, workDays: 0, present: 0, late: 0, absent: 0, holiday: 0, leaveDays: 0, approvedLeaveDays: 0, pendingLeaveDays: 0, workHours: 0 };
+    const days = Number(leave.totalDays) || 0;
+    current.leaveDays += days;
+    if (leave.status === "approved") current.approvedLeaveDays += days;
+    if (leave.status === "pending") current.pendingLeaveDays += days;
+    grouped.set(leave.employeeId, current);
+  }
+  return Array.from(grouped.values()).sort((a, b) => a.employeeId - b.employeeId);
+}
 export function calculateInclusiveLeaveDays(startDate: Date, endDate: Date) { const start = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()); const end = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()); return Math.floor((end - start) / 86400000) + 1; }
 
 export async function listIngredients(ownerId?: number) { const db = await getDb(); return db ? db.select().from(ingredients).where(ownerId ? eq(ingredients.createdBy, ownerId) : undefined).orderBy(desc(ingredients.updatedAt)) : []; }
@@ -52,6 +76,11 @@ export async function listProducts() { const db = await getDb(); return db ? db.
 export async function listSalesOrders(ownerId?: number) { const db = await getDb(); return db ? db.select().from(salesOrders).where(ownerId ? eq(salesOrders.createdBy, ownerId) : undefined).orderBy(desc(salesOrders.createdAt)).limit(100) : []; }
 export async function listAuditLogs(limit = 100) { const db = await getDb(); return db ? db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(limit) : []; }
 export async function listWorkflowTasks(userId?: number) { const db = await getDb(); return db ? db.select().from(workflowTasks).where(userId ? eq(workflowTasks.assigneeId, userId) : undefined).orderBy(desc(workflowTasks.updatedAt)).limit(200) : []; }
+export async function getWorkflowAlerts(ownerId?: number) {
+  const [lowStock, schedules, pendingLeaves] = await Promise.all([listLowStockIngredients(), listMaintenanceSchedules(ownerId), listLeaveRequests({ ownerId, status: "pending" })]);
+  const overdueMaintenance = schedules.filter(row => row.status === "active" && new Date(row.nextDueAt).getTime() < Date.now());
+  return { lowStockCount: lowStock.length, lowStock, overdueMaintenanceCount: overdueMaintenance.length, overdueMaintenance, pendingLeaveCount: pendingLeaves.length, pendingLeaves, total: lowStock.length + overdueMaintenance.length + pendingLeaves.length };
+}
 export async function listMaintenanceAssets(ownerId?: number) { const db = await getDb(); return db ? db.select().from(maintenanceAssets).where(ownerId ? eq(maintenanceAssets.createdBy, ownerId) : undefined).orderBy(desc(maintenanceAssets.updatedAt)).limit(500) : []; }
 export async function listMaintenanceSchedules(ownerId?: number) { const db = await getDb(); return db ? db.select().from(maintenanceSchedules).where(ownerId ? eq(maintenanceSchedules.createdBy, ownerId) : undefined).orderBy(maintenanceSchedules.nextDueAt).limit(500) : []; }
 export async function listMaintenanceTickets(ownerId?: number) { const db = await getDb(); return db ? db.select().from(maintenanceTickets).where(ownerId ? eq(maintenanceTickets.createdBy, ownerId) : undefined).orderBy(desc(maintenanceTickets.updatedAt)).limit(500) : []; }
@@ -68,6 +97,7 @@ export async function listReceivables(ownerId?: number) { const db = await getDb
 export async function listPayables(ownerId?: number) { const db = await getDb(); return db ? db.select().from(payables).where(ownerId ? eq(payables.createdBy, ownerId) : undefined).orderBy(desc(payables.createdAt)).limit(500) : []; }
 export function summarizeFinanceTransactions(rows: Array<{ type: "income" | "expense"; amount: string | number; status?: string }>) { return rows.filter(row => row.status !== "cancelled").reduce((summary, row) => { const amount = Number(row.amount) || 0; if (row.type === "income") summary.income += amount; else summary.expense += amount; summary.net = summary.income - summary.expense; return summary; }, { income: 0, expense: 0, net: 0 }); }
 export function summarizeOutstanding(rows: Array<{ amount: string | number; paidAmount: string | number; status?: string }>) { return rows.filter(row => row.status !== "cancelled").reduce((total, row) => total + Math.max(0, (Number(row.amount) || 0) - (Number(row.paidAmount) || 0)), 0); }
+export async function getPosReconciliation(ownerId?: number) { const db = await getDb(); if (!db) return { posRevenue: 0, reconciledRevenue: 0, difference: 0, completedOrders: 0, linkedReceipts: 0 }; const ownerOrderFilter = ownerId ? eq(salesOrders.createdBy, ownerId) : undefined; const ownerFinanceFilter = ownerId ? eq(financeTransactions.createdBy, ownerId) : undefined; const [sales, receipts] = await Promise.all([db.select({ total: sql<string>`coalesce(sum(${salesOrders.total}), 0)`, count: sql<number>`count(*)` }).from(salesOrders).where(ownerOrderFilter ? and(eq(salesOrders.status, "completed"), ownerOrderFilter) : eq(salesOrders.status, "completed")), db.select({ amount: sql<string>`coalesce(sum(${financeTransactions.amount}), 0)`, count: sql<number>`count(*)` }).from(financeTransactions).where(ownerFinanceFilter ? and(eq(financeTransactions.type, "income"), eq(financeTransactions.status, "posted"), eq(financeTransactions.referenceType, "pos"), ownerFinanceFilter) : and(eq(financeTransactions.type, "income"), eq(financeTransactions.status, "posted"), eq(financeTransactions.referenceType, "pos")))]); const posRevenue = Number(sales[0]?.total ?? 0); const reconciledRevenue = Number(receipts[0]?.amount ?? 0); return { posRevenue, reconciledRevenue, difference: posRevenue - reconciledRevenue, completedOrders: Number(sales[0]?.count ?? 0), linkedReceipts: Number(receipts[0]?.count ?? 0) }; }
 export function selectQcStandardForBeerType<T extends { beerTypeId: number; fieldKey: string }>(standards: T[], beerTypeId: number, fieldKey: string) { return standards.find(standard => standard.beerTypeId === beerTypeId && standard.fieldKey === fieldKey); }
 export async function listQcStandards(beerTypeId?: number) { const db = await getDb(); return db ? db.select().from(qcStandards).where(beerTypeId ? eq(qcStandards.beerTypeId, beerTypeId) : undefined).orderBy(qcStandards.fieldKey) : []; }
 export async function listQcResults(batchId: number) { const db = await getDb(); return db ? db.select().from(qcResults).where(eq(qcResults.batchId, batchId)).orderBy(desc(qcResults.createdAt)) : []; }

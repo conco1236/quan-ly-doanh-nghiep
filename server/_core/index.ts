@@ -8,9 +8,9 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { sdk } from "./sdk";
-import { getDb, cleanupOrphanedStoredFiles } from "../db";
+import { getDb, cleanupOrphanedStoredFiles, getWorkflowAlerts } from "../db";
 import { workflowTasks } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { serveStatic, setupVite } from "./vite";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -49,6 +49,28 @@ async function startServer() {
       return res.json({ ok: true, ...result });
     } catch (error) {
       return res.status(500).json({ error: error instanceof Error ? error.message : "storage-cleanup-failed", timestamp: new Date().toISOString() });
+    }
+  });
+  app.post("/api/scheduled/workflow-alert-scan", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const db = await getDb();
+      if (!db) return res.status(503).json({ error: "database-unavailable" });
+      const alerts = await getWorkflowAlerts();
+      const candidates = [
+        ...alerts.lowStock.map(row => ({ entityType: "low_stock", entityId: String(row.id), title: `Tồn kho thấp: ${row.name}`, description: `Tồn ${row.stockQuantity} ${row.unit}, ngưỡng ${row.lowStockThreshold} ${row.unit}` })),
+        ...alerts.overdueMaintenance.map(row => ({ entityType: "maintenance_overdue", entityId: String(row.id), title: `Bảo trì quá hạn: ${row.title}`, description: `Lịch bảo dưỡng đã quá hạn từ ${new Date(row.nextDueAt).toISOString()}` })),
+        ...alerts.pendingLeaves.map(row => ({ entityType: "leave_pending", entityId: String(row.id), title: `Đơn nghỉ chờ duyệt #${row.id}`, description: `Nhân viên #${row.employeeId} xin nghỉ ${row.totalDays} ngày` })),
+      ];
+      let created = 0;
+      for (const item of candidates) {
+        const existing = (await db.select({ id: workflowTasks.id }).from(workflowTasks).where(and(eq(workflowTasks.entityType, item.entityType), eq(workflowTasks.entityId, item.entityId), or(eq(workflowTasks.status, "open"), eq(workflowTasks.status, "in_progress")))).limit(1))[0];
+        if (!existing) { await db.insert(workflowTasks).values({ ...item, status: "open", createdBy: null }); created += 1; }
+      }
+      return res.json({ ok: true, scanned: candidates.length, created, alerts: { lowStock: alerts.lowStockCount, overdueMaintenance: alerts.overdueMaintenanceCount, pendingLeaves: alerts.pendingLeaveCount } });
+    } catch (error) {
+      return res.status(500).json({ error: error instanceof Error ? error.message : "workflow-alert-scan-failed", timestamp: new Date().toISOString() });
     }
   });
   app.post("/api/scheduled/workflow-reminders", async (req, res) => {
