@@ -233,7 +233,7 @@ function POSPanel({ products }: { products: any[] }) {
   }, [cart]);
   const receipt = trpc.sales.receipt.useQuery({ id: lastOrderId ?? 0 }, { enabled: Boolean(lastOrderId) });
   const salesCreate = trpc.sales.create.useMutation();
-  const qrInput = useMemo(() => ({ bankBin: "970422", accountNumber, accountName, amount: Math.round(calculation.total), addInfo: "Thanh toan POS BreweryOS" }), [accountNumber, accountName, calculation.total]);
+  const qrInput = useMemo(() => ({ bankBin: "970422", accountNumber, accountName, amount: Math.round(calculation.total), addInfo: "Thanh toan Quản Lý Doanh Nghiệp" }), [accountNumber, accountName, calculation.total]);
   const qr = trpc.pos.vietQrUrl.useQuery(qrInput, { enabled: Boolean(accountNumber && accountName && calculation.total > 0) });
   const add = (product: any) => setCart(current => {
     const found = current.find(item => item.id === product.id);
@@ -242,10 +242,10 @@ function POSPanel({ products }: { products: any[] }) {
   const change = (id: number, delta: number) => setCart(current => current.map(item => item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item).filter(item => item.quantity > 0));
   const printReceipt = () => {
     if (!receipt.data) return;
-    const popup = window.open("", "breweryos-bill", "width=420,height=720");
+    const popup = window.open("", "enterprise-bill", "width=420,height=720");
     if (!popup) return;
     const order = receipt.data.order;
-    const html = "<main><h2>BREWERYOS</h2><h1>HÓA ĐƠN THANH TOÁN</h1><p>Mã đơn: " + (order?.orderCode ?? "-") + "</p><hr/><p>Tổng tiền: <strong>" + money(Number(order?.total ?? 0)) + "</strong></p><p>Ngày in: " + new Date(receipt.data.printedAt).toLocaleString("vi-VN") + "</p></main>";
+    const html = "<main><h2>QUẢN LÝ DOANH NGHIỆP</h2><p style='letter-spacing:.12em;font-size:11px'>HỆ THỐNG QUẢN TRỊ DOANH NGHIỆP</p><h1>HÓA ĐƠN THANH TOÁN</h1><p>Mã đơn: " + (order?.orderCode ?? "-") + "</p><hr/><p>Tổng tiền: <strong>" + money(Number(order?.total ?? 0)) + "</strong></p><p>Ngày in: " + new Date(receipt.data.printedAt).toLocaleString("vi-VN") + "</p><footer style='margin-top:24px;font-size:11px'>Cảm ơn quý khách đã giao dịch cùng Quản Lý Doanh Nghiệp.</footer></main>";
     popup.document.write(html);
     popup.document.close();
     popup.focus();

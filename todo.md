@@ -437,3 +437,11 @@
 - [x] Cập nhật chữ thương hiệu trong sidebar thành Quản Lý Doanh Nghiệp
 - [x] Đồng bộ khu vực logo/header và văn bản thay thế
 - [x] Giữ responsive desktop/mobile và chạy validation
+
+
+## Đồng bộ hóa đơn POS
+
+- [x] Rà soát và loại bỏ từ khóa thương hiệu cũ khỏi mẫu hóa đơn POS
+- [x] Hiển thị Quản Lý Doanh Nghiệp trong tiêu đề và chân hóa đơn
+- [x] Cập nhật nội dung chuyển khoản/thanh toán liên quan nếu còn tên cũ
+- [x] Bổ sung test hóa đơn và chạy full validation
