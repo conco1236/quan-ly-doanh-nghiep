@@ -234,3 +234,14 @@
 - [x] Bổ sung validation, loading/empty/error states và responsive cho Nhân sự
 - [x] Viết unit/integration tests cho validation, quyền sở hữu và CRUD Nhân sự
 - [x] Kiểm tra TypeScript, Vitest, build và screenshot trước checkpoint
+
+## Module Chấm công và Ngày phép
+
+- [x] Thiết kế bảng attendance_records và leave_requests liên kết employees
+- [x] Tạo migration database cho chấm công và ngày phép
+- [x] Thêm helper database và API tRPC cho chấm công, đơn nghỉ phép và duyệt nghỉ phép
+- [x] Tích hợp giao diện chấm công theo ngày và quản lý ngày phép theo nhân viên
+- [x] Bổ sung owner/RLS, access mode và audit cho các thao tác nhạy cảm
+- [x] Thêm validation, loading/empty/error states và responsive
+- [x] Viết unit/integration tests cho ngày công, trùng bản ghi và quy trình duyệt nghỉ
+- [x] Kiểm tra TypeScript, Vitest, build và screenshot trước checkpoint

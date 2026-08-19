@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, index } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, index, uniqueIndex } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -28,6 +28,35 @@ export const employees = mysqlTable("employees", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, table => ({ ownerIdx: index("employees_created_by_idx").on(table.createdBy), departmentIdx: index("employees_department_idx").on(table.department), statusIdx: index("employees_status_idx").on(table.employmentStatus), nameIdx: index("employees_name_idx").on(table.fullName) }));
+
+export const attendanceRecords = mysqlTable("attendance_records", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  workDate: timestamp("workDate").notNull(),
+  status: mysqlEnum("status", ["present", "late", "absent", "leave", "holiday"]).default("present").notNull(),
+  checkIn: timestamp("checkIn"),
+  checkOut: timestamp("checkOut"),
+  note: text("note"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ employeeIdx: index("attendance_employee_idx").on(table.employeeId), workDateIdx: index("attendance_work_date_idx").on(table.workDate), ownerIdx: index("attendance_created_by_idx").on(table.createdBy), uniqueEmployeeDate: uniqueIndex("attendance_employee_date_unique").on(table.employeeId, table.workDate) }));
+
+export const leaveRequests = mysqlTable("leave_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeId: int("employeeId").notNull(),
+  leaveType: mysqlEnum("leaveType", ["annual", "sick", "unpaid", "other"]).default("annual").notNull(),
+  startDate: timestamp("startDate").notNull(),
+  endDate: timestamp("endDate").notNull(),
+  totalDays: decimal("totalDays", { precision: 6, scale: 2 }).notNull(),
+  reason: text("reason"),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "cancelled"]).default("pending").notNull(),
+  approvedBy: int("approvedBy"),
+  approvedAt: timestamp("approvedAt"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ employeeIdx: index("leave_employee_idx").on(table.employeeId), statusIdx: index("leave_status_idx").on(table.status), startDateIdx: index("leave_start_date_idx").on(table.startDate), ownerIdx: index("leave_created_by_idx").on(table.createdBy) }));
 
 export const ingredients = mysqlTable("ingredients", {
   id: int("id").autoincrement().primaryKey(),
@@ -234,6 +263,8 @@ export const qcResults = mysqlTable("qc_results", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Employee = typeof employees.$inferSelect;
+export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
+export type LeaveRequest = typeof leaveRequests.$inferSelect;
 export type Ingredient = typeof ingredients.$inferSelect;
 export type BeerType = typeof beerTypes.$inferSelect;
 export type ProductionBatch = typeof productionBatches.$inferSelect;
