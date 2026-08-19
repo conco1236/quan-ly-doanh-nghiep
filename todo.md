@@ -388,3 +388,11 @@
 - [x] Tích hợp nút Excel/PDF, trạng thái loading/thành công/thất bại vào Finance và HR
 - [x] Bổ sung test dữ liệu, công thức/tổng hợp và tên file xuất
 - [x] Chạy full test, TypeScript, build, responsive và lưu checkpoint
+
+
+## Logo và chữ ký trong PDF
+
+- [x] Bổ sung logo vector BreweryOS vào header PDF
+- [x] Bổ sung thông tin người phê duyệt, chức danh và khu vực ký cuối PDF
+- [x] Truyền metadata phê duyệt cho báo cáo POS và HR
+- [x] Bổ sung test helper PDF metadata và chạy full validation

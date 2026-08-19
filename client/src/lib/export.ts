@@ -174,22 +174,26 @@ export function buildHrAttendanceReportSheets(attendance: AttendanceSummaryInput
   ];
 }
 
-function pdfText(value: ExportCell) { return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }
+export type PdfApprovalMeta = { approverName?: string; approverTitle?: string; companyName?: string; companyTagline?: string };
+export function normalizePdfText(value: ExportCell) { return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }
+function drawBreweryLogo(doc: jsPDF, x: number, y: number) { doc.setFillColor(214, 167, 45); doc.roundedRect(x, y, 34, 34, 7, 7, "F"); doc.setTextColor(16, 42, 67); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("B", x + 10, y + 24); }
 
-export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[]) {
+export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-  doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F");
-  doc.setTextColor(255, 255, 255); doc.setFontSize(18); doc.text(pdfText(title), 32, 35);
+  const companyName = approval.companyName ?? "BREWERYOS";
+  doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11);
+  doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(normalizePdfText(companyName), 76, 27); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.companyTagline ?? "He thong quan tri nha may bia"), 76, 41); doc.setFontSize(18); doc.text(normalizePdfText(title), 590, 35, { align: "right" });
   doc.setTextColor(36, 59, 83); doc.setFontSize(9);
   let y = 82;
-  for (const line of summary ?? []) { doc.text(pdfText(line), 32, y); y += 15; }
+  for (const line of summary ?? []) { doc.text(normalizePdfText(line), 32, y); y += 15; }
   y += 8;
   const columnWidth = 778 / headers.length; const rowHeight = 20;
   doc.setFillColor(214, 167, 45); doc.rect(32, y, 778, rowHeight, "F");
   doc.setTextColor(16, 42, 67); doc.setFontSize(8);
-  headers.forEach((header, index) => doc.text(pdfText(header), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 }));
+  headers.forEach((header, index) => doc.text(normalizePdfText(header), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 }));
   y += rowHeight;
-  rows.slice(0, 28).forEach((row, rowIndex) => { if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(32, y, 778, rowHeight, "F"); } doc.setTextColor(36, 59, 83); row.forEach((value, index) => doc.text(pdfText(value), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 })); y += rowHeight; });
-  doc.setFontSize(8); doc.setTextColor(98, 125, 152); doc.text(`BreweryOS · Xuất lúc ${new Date().toLocaleString("vi-VN")}`, 32, 570);
+  rows.slice(0, 28).forEach((row, rowIndex) => { if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(32, y, 778, rowHeight, "F"); } doc.setTextColor(36, 59, 83); row.forEach((value, index) => doc.text(normalizePdfText(value), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 })); y += rowHeight; });
+  if (y > 475) { doc.addPage(); y = 76; }
+  const signatureY = Math.max(y + 35, 360); doc.setTextColor(36, 59, 83); doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("NGUOI PHE DUYET", 640, signatureY, { align: "center" }); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.approverTitle ?? "Quan ly / Ke toan truong"), 640, signatureY + 14, { align: "center" }); doc.setDrawColor(159, 179, 200); doc.line(570, signatureY + 72, 710, signatureY + 72); doc.setFontSize(9); doc.text(normalizePdfText(approval.approverName ?? "Chua xac dinh"), 640, signatureY + 88, { align: "center" }); doc.setFontSize(8); doc.setTextColor(98, 125, 152); doc.text(`BreweryOS · Xuat luc ${new Date().toLocaleString("vi-VN")}`, 32, 570);
   doc.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
 }

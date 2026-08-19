@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments, normalizePdfText } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -46,6 +46,12 @@ describe("POS and HR report workbooks", () => {
     expect(sheets[1].rows).toHaveLength(1);
     expect(sheets[2].rows[0][3]).toBe("2026-08");
     expect(sheets[3].rows[0][0]).toBe("Sản xuất");
+  });
+});
+
+describe("PDF branding and approval metadata", () => {
+  it("normalizes Vietnamese text for the built-in PDF font", () => {
+    expect(normalizePdfText("Báo cáo đối soát – Người phê duyệt: Đỗ Bảo")).toBe("Bao cao doi soat – Nguoi phe duyet: Do Bao");
   });
 });
 
