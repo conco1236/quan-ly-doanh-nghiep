@@ -53,3 +53,57 @@
 
 - [x] Chỉ đóng dialog khi mutation thành công; giữ nguyên form khi thất bại
 - [x] Hiển thị lỗi mutation trực tiếp trong dialog để người dùng sửa dữ liệu
+
+## Yêu cầu nâng cấp ERP đa phân hệ
+
+- [ ] Đánh giá khả năng chịu tải 200.000+ dòng và hơn 50 người dùng đồng thời
+- [ ] Bổ sung phân hệ Sản xuất, Kho bãi, Bán hàng, KCS/QC, Nhân sự và Thu chi
+- [x] Thiết kế lớp metadata Zero-Trust ứng dụng với device ID, IP, user-agent và nhật ký request
+- [ ] Bổ sung tường lửa IP, giới hạn mạng công ty và chế độ chỉ xem ngoài công ty
+- [x] Bổ sung RLS theo người tạo và vai trò nghiệp vụ ở các danh sách/mutation chính
+- [x] Bổ sung workflow task và callback nhắc việc idempotent; bước tạo lịch Heartbeat sẽ thực hiện sau khi deploy
+- [x] Bổ sung audit trail với oldValue/newValue, IP, device và user-agent cho các thay đổi chính
+- [ ] Bổ sung optimistic UI có rollback khi mutation thất bại
+- [ ] Bổ sung Cross-Sheet Popup và liên kết bản ghi giữa các phân hệ
+- [ ] Bổ sung POS, tính tiền, sinh VietQR động và in bill
+- [ ] Bổ sung JSON Grid cho dữ liệu quan hệ 1-Nhiều của Lab/QC
+- [x] Bổ sung QC record với đánh giá pass/fail theo ngưỡng Min/Max
+- [ ] Bổ sung dropdown liên hoàn theo địa giới và danh mục phụ thuộc
+- [x] Bổ sung batch insert nguyên liệu tối đa 500 dòng mỗi request và audit batch
+- [ ] Bổ sung tính toán client-side và virtualized grid cho dữ liệu lớn
+- [ ] Bổ sung auto-clean tệp mồ côi theo lịch định kỳ
+- [ ] Bổ sung cơ chế reset ID O(1) an toàn và nhật ký thao tác
+- [ ] Bổ sung Smart UI nhận diện từ khóa để gán icon và nhóm menu
+- [ ] Kiểm thử tải, bảo mật, responsive và hiệu năng trên PC/mobile
+- [ ] Cập nhật tài liệu giới hạn vận hành, cấu hình và lộ trình triển khai
+
+## Quyết định kiến trúc phương án A
+
+- [x] Tối ưu truy vấn phân trang cursor cho dữ liệu lớn trong hosting quản lý hiện tại
+- [ ] Thiết kế lớp bảo mật ứng dụng Zero-Trust không phụ thuộc agent hệ điều hành
+- [x] Tạo schema chính sách IP với mặc định ngoài mạng công ty là chỉ xem; chưa bật enforcement khi chưa có dải IP thực tế
+- [x] Triển khai RLS ứng dụng, audit trail theo trường và metadata IP/device trong giới hạn database hiện tại
+- [x] Triển khai callback Heartbeat idempotent cho workflow nhắc việc; auto-clean tệp vẫn cần tích hợp storage listing riêng
+- [x] Ghi rõ giới hạn phương án A: không cam kết fingerprint phần cứng tuyệt đối, firewall hệ điều hành hoặc thông lượng 50 user trong mọi điều kiện
+
+## Khoảng cần sửa trước checkpoint nâng cấp
+
+- [x] Sửa QC record để lấy chuẩn theo batch và beerType tương ứng; logic đã tách ngưỡng theo từng loại bia
+- [x] Nối cursor pagination vào UI Kho nguyên liệu và áp dụng owner filter ở backend
+- [x] Enforce ownership cho mutation kho, sản xuất, khách hàng, đơn hàng và ghi audit oldValue/newValue ở các thao tác chính
+
+## Khoảng còn lại trước checkpoint tiếp theo
+
+- [x] Hoàn thiện ownership và audit cho beerTypes.update/delete, recipes.update/delete, sales.create và mutation còn thiếu
+- [x] Hoàn thiện UI phân trang Kho bằng nextCursor và thao tác tải trang tiếp theo
+- [x] Bổ sung test QC nhiều loại bia dùng cùng fieldKey và threshold độc lập
+
+## Test hồi quy QC theo lô
+
+- [x] Bổ sung test helper QC xác nhận cùng fieldKey nhưng khác beerTypeId lấy đúng Min/Max theo batch
+- [x] Bổ sung test hồi quy hai lô khác loại bia, một giá trị pass ở bia A nhưng fail ở bia B
+
+## Kiểm thử đầy đủ luồng QC
+
+- [x] Tách helper đánh giá QC nhận batch, danh sách standard và fieldKey rồi kiểm thử đầy đủ luồng batchId → beerTypeId → Min/Max
+- [x] Kiểm thử hai batch khác beerType có cùng fieldKey và cùng giá trị nhưng kết quả pass/fail khác nhau

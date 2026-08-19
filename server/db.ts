@@ -1,6 +1,6 @@
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems } from "../drizzle/schema";
+import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -34,16 +34,22 @@ export async function getUserByOpenId(openId: string) {
   return result[0];
 }
 
-export async function listIngredients() { const db = await getDb(); return db ? db.select().from(ingredients).orderBy(desc(ingredients.updatedAt)) : []; }
+export async function listIngredients(ownerId?: number) { const db = await getDb(); return db ? db.select().from(ingredients).where(ownerId ? eq(ingredients.createdBy, ownerId) : undefined).orderBy(desc(ingredients.updatedAt)) : []; }
+export async function listIngredientsPage(input: { limit: number; cursor?: number; ownerId?: number }) { const db = await getDb(); if (!db) return { items: [], nextCursor: null }; const items = await db.select().from(ingredients).where(input.cursor && input.ownerId ? and(lt(ingredients.id, input.cursor), eq(ingredients.createdBy, input.ownerId)) : input.cursor ? lt(ingredients.id, input.cursor) : input.ownerId ? eq(ingredients.createdBy, input.ownerId) : undefined).orderBy(desc(ingredients.id)).limit(input.limit + 1); const hasMore = items.length > input.limit; const page = hasMore ? items.slice(0, input.limit) : items; return { items: page, nextCursor: hasMore ? page[page.length - 1]?.id ?? null : null }; }
 export async function listLowStockIngredients() { const db = await getDb(); return db ? db.select().from(ingredients).where(sql`${ingredients.stockQuantity} <= ${ingredients.lowStockThreshold}`).orderBy(ingredients.name) : []; }
 export async function listInventoryTransactions() { const db = await getDb(); return db ? db.select().from(inventoryTransactions).orderBy(desc(inventoryTransactions.createdAt)).limit(50) : []; }
-export async function listBeerTypes() { const db = await getDb(); return db ? db.select().from(beerTypes).orderBy(desc(beerTypes.createdAt)) : []; }
-export async function listRecipes(beerTypeId?: number) { const db = await getDb(); return db ? db.select().from(recipes).where(beerTypeId ? eq(recipes.beerTypeId, beerTypeId) : undefined) : []; }
-export async function listProductionBatches() { const db = await getDb(); return db ? db.select().from(productionBatches).orderBy(desc(productionBatches.createdAt)).limit(100) : []; }
+export async function listBeerTypes(ownerId?: number) { const db = await getDb(); return db ? db.select().from(beerTypes).where(ownerId ? eq(beerTypes.createdBy, ownerId) : undefined).orderBy(desc(beerTypes.createdAt)) : []; }
+export async function listRecipes(beerTypeId?: number, ownerId?: number) { const db = await getDb(); return db ? db.select().from(recipes).where(beerTypeId && ownerId ? and(eq(recipes.beerTypeId, beerTypeId), eq(recipes.createdBy, ownerId)) : beerTypeId ? eq(recipes.beerTypeId, beerTypeId) : ownerId ? eq(recipes.createdBy, ownerId) : undefined) : []; }
+export async function listProductionBatches(ownerId?: number) { const db = await getDb(); return db ? db.select().from(productionBatches).where(ownerId ? eq(productionBatches.createdBy, ownerId) : undefined).orderBy(desc(productionBatches.createdAt)).limit(100) : []; }
 export async function listProductionSteps(batchId: number) { const db = await getDb(); return db ? db.select().from(productionSteps).where(eq(productionSteps.batchId, batchId)).orderBy(productionSteps.id) : []; }
-export async function listCustomers() { const db = await getDb(); return db ? db.select().from(customers).orderBy(desc(customers.createdAt)) : []; }
+export async function listCustomers(ownerId?: number) { const db = await getDb(); return db ? db.select().from(customers).where(ownerId ? eq(customers.createdBy, ownerId) : undefined).orderBy(desc(customers.createdAt)) : []; }
 export async function listProducts() { const db = await getDb(); return db ? db.select().from(beerProducts).orderBy(desc(beerProducts.createdAt)) : []; }
-export async function listSalesOrders() { const db = await getDb(); return db ? db.select().from(salesOrders).orderBy(desc(salesOrders.createdAt)).limit(100) : []; }
+export async function listSalesOrders(ownerId?: number) { const db = await getDb(); return db ? db.select().from(salesOrders).where(ownerId ? eq(salesOrders.createdBy, ownerId) : undefined).orderBy(desc(salesOrders.createdAt)).limit(100) : []; }
+export async function listAuditLogs(limit = 100) { const db = await getDb(); return db ? db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(limit) : []; }
+export async function listWorkflowTasks(userId?: number) { const db = await getDb(); return db ? db.select().from(workflowTasks).where(userId ? eq(workflowTasks.assigneeId, userId) : undefined).orderBy(desc(workflowTasks.updatedAt)).limit(200) : []; }
+export function selectQcStandardForBeerType<T extends { beerTypeId: number; fieldKey: string }>(standards: T[], beerTypeId: number, fieldKey: string) { return standards.find(standard => standard.beerTypeId === beerTypeId && standard.fieldKey === fieldKey); }
+export async function listQcStandards(beerTypeId?: number) { const db = await getDb(); return db ? db.select().from(qcStandards).where(beerTypeId ? eq(qcStandards.beerTypeId, beerTypeId) : undefined).orderBy(qcStandards.fieldKey) : []; }
+export async function listQcResults(batchId: number) { const db = await getDb(); return db ? db.select().from(qcResults).where(eq(qcResults.batchId, batchId)).orderBy(desc(qcResults.createdAt)) : []; }
 
 export async function dashboardSummary() {
   const db = await getDb();

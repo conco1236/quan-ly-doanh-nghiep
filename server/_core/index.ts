@@ -7,6 +7,10 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import { sdk } from "./sdk";
+import { getDb } from "../db";
+import { workflowTasks } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { serveStatic, setupVite } from "./vite";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -36,6 +40,21 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.post("/api/scheduled/workflow-reminders", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron || !user.taskUid) return res.status(403).json({ error: "cron-only" });
+      const db = await getDb();
+      if (!db) return res.status(503).json({ error: "database-unavailable" });
+      const task = (await db.select().from(workflowTasks).where(eq(workflowTasks.scheduleCronTaskUid, user.taskUid)).limit(1))[0];
+      if (!task) return res.json({ ok: true, skipped: "orphan" });
+      if (["done", "cancelled"].includes(task.status)) return res.json({ ok: true, skipped: task.status });
+      await db.update(workflowTasks).set({ lastNotifiedAt: new Date() }).where(eq(workflowTasks.id, task.id));
+      return res.json({ ok: true, taskId: task.id, status: task.status });
+    } catch (error) {
+      return res.status(500).json({ error: error instanceof Error ? error.message : "workflow-reminder-failed", timestamp: new Date().toISOString() });
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",
