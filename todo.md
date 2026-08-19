@@ -469,3 +469,12 @@
 - [x] Tạo repository GitHub riêng tư cho dự án
 - [x] Commit và push mã nguồn lên GitHub
 - [x] Xác minh remote và đường dẫn repository
+
+
+## README hướng dẫn dự án
+
+- [x] Viết README tiếng Việt với tổng quan kiến trúc và module
+- [x] Hướng dẫn cài đặt, chạy development/production và migration database
+- [x] Tài liệu biến môi trường, branding, storage và bảo mật
+- [x] Hướng dẫn test, build, GitHub workflow và troubleshooting
+- [x] Rà soát, commit và push README lên GitHub
