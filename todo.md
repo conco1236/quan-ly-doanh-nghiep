@@ -286,3 +286,11 @@
 - [x] Dùng công thức SUM/COUNTA native cho các cột số và định dạng nổi bật dòng tổng
 - [x] Bổ sung test công thức, số dòng và style dòng Tổng cộng
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Nhóm và Subtotal theo Phòng ban
+
+- [x] Bổ sung phòng ban vào dữ liệu tổng hợp nhân viên-tháng
+- [x] Nhóm các dòng sheet Tổng hợp theo phòng ban và chèn subtotal sau từng nhóm
+- [x] Dùng công thức SUM native cho subtotal và vẫn giữ Tổng cộng cuối sheet
+- [x] Bổ sung test nhóm phòng ban, subtotal và trường hợp không có phòng ban
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint

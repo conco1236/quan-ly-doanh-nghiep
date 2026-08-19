@@ -43,12 +43,24 @@ describe("employee monthly summary", () => {
         { employeeId: 1, startDate: "2026-08-10T00:00:00Z", totalDays: "2", leaveType: "annual", status: "approved" },
         { employeeId: 1, startDate: "2026-08-20T00:00:00Z", totalDays: 1, leaveType: "sick", status: "pending" },
       ],
-      [{ id: 1, employeeCode: "E001", fullName: "Bảo Bảo" }, { id: 2, employeeCode: "E002", fullName: "Lan Lan" }],
+      [{ id: 1, employeeCode: "E001", fullName: "Bảo Bảo", department: "Sản xuất" }, { id: 2, employeeCode: "E002", fullName: "Lan Lan", department: "Kho" }],
     );
     expect(rows).toEqual([
-      ["Bảo Bảo", "E001", "2026-08", 2, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0, 1],
-      ["Lan Lan", "E002", "2026-09", 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      ["Lan Lan", "E002", "Kho", "2026-09", 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      ["Bảo Bảo", "E001", "Sản xuất", "2026-08", 2, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0, 1],
     ]);
+  });
+
+  it("groups the summary sheet and creates department subtotals", () => {
+    const workbook = buildXlsxWorkbook([{ name: "Tong hop", headers: ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công"], rows: [["Lan Lan", "E002", "Kho", "2026-09", 1], ["Bảo Bảo", "E001", "Sản xuất", "2026-08", 2]], groupByColumn: 2 }]);
+    const sheet = workbook.Sheets["Tong hop"];
+    expect(sheet["A3"].v).toBe("Subtotal - Kho");
+    expect(sheet["E3"].f).toBe("SUM(E2:E2)");
+    expect(sheet["A5"].v).toBe("Subtotal - Sản xuất");
+    expect(sheet["E5"].f).toBe("SUM(E4:E4)");
+    expect(sheet["A6"].v).toBe("Tổng cộng");
+    expect(sheet["E6"].f).toBe("SUM(E3,E5)");
+    expect(sheet["A3"].s.font.bold).toBe(true);
   });
 
   it("returns no rows for empty datasets", () => {
