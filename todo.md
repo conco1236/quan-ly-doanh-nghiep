@@ -465,7 +465,7 @@
 
 ## Đồng bộ GitHub
 
-- [ ] Kiểm tra trạng thái Git và repository hiện tại
-- [ ] Tạo repository GitHub riêng tư cho dự án
-- [ ] Commit và push mã nguồn lên GitHub
-- [ ] Xác minh remote và đường dẫn repository
+- [x] Kiểm tra trạng thái Git và repository hiện tại
+- [x] Tạo repository GitHub riêng tư cho dự án
+- [x] Commit và push mã nguồn lên GitHub
+- [x] Xác minh remote và đường dẫn repository
