@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx";
+
 export type ExportCell = string | number | null | undefined;
 
 export function escapeCsvCell(value: ExportCell) {
@@ -27,4 +29,21 @@ export function downloadExcel(filename: string, sheetName: string, headers: stri
   const cells = (row: ExportCell[]) => row.map(value => `<td>${String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")}</td>`).join("");
   const html = `<html><head><meta charset="utf-8" /></head><body><table><caption>${sheetName}</caption><thead><tr>${cells(headers)}</tr></thead><tbody>${rows.map(row => `<tr>${cells(row)}</tr>`).join("")}</tbody></table></body></html>`;
   downloadBlob(`\uFEFF${html}`, filename.endsWith(".xls") ? filename : `${filename}.xls`, "application/vnd.ms-excel;charset=utf-8");
+}
+
+export type ExcelSheet = { name: string; headers: string[]; rows: ExportCell[][] };
+
+export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
+  const workbook = XLSX.utils.book_new();
+  for (const sheet of sheets) {
+    const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows]);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name.slice(0, 31));
+  }
+  return workbook;
+}
+
+export function downloadXlsx(filename: string, sheets: ExcelSheet[]) {
+  const workbook = buildXlsxWorkbook(sheets);
+  const content = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  downloadBlob(content, filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }

@@ -254,3 +254,11 @@
 - [x] Bổ sung trạng thái rỗng, thông báo lỗi và tên file theo thời gian xuất
 - [x] Viết test cho mapping cột, escape CSV và dữ liệu ngày phép
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## XLSX native nhiều sheet
+
+- [x] Thêm thư viện XLSX native phù hợp cho client
+- [x] Tạo workbook XLSX với sheet Chấm công và sheet Ngày phép
+- [x] Nâng cấp nút xuất Excel sang .xlsx và giữ CSV độc lập
+- [x] Bổ sung test workbook có nhiều sheet, tiêu đề tiếng Việt và dữ liệu rỗng
+- [x] Kiểm tra dependency, TypeScript, Vitest, build và responsive trước checkpoint
