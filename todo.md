@@ -332,7 +332,7 @@
 
 - [ ] Thiết kế mô hình dữ liệu liên module và ma trận quyền nghiệp vụ
 - [ ] Triển khai Thu–Chi, Công nợ và đối soát POS
-- [ ] Triển khai Mua hàng và quản lý Nhà cung cấp
+- [x] Triển khai Mua hàng và quản lý Nhà cung cấp
 - [ ] Triển khai Định mức, Giá vốn và hiệu quả sản xuất
 - [ ] Triển khai Bảo trì thiết bị và lịch sử sự cố
 - [ ] Nâng cấp Chấm công, bảng công tháng và phê duyệt
@@ -347,3 +347,11 @@
 - [x] Thêm API tRPC list/create/update/settle với owner, access mode và audit
 - [x] Thay placeholder Thu chi bằng giao diện sổ quỹ, bộ lọc và form nghiệp vụ
 - [x] Bổ sung test validation, quyền và tổng hợp số dư tài chính
+
+### Mua hàng và Nhà cung cấp
+
+- [x] Tạo bảng nhà cung cấp, đơn mua và chi tiết đơn mua
+- [x] Thêm API tRPC danh sách/tạo/cập nhật trạng thái đơn mua
+- [x] Tích hợp nhận hàng vào tồn kho và audit số lượng
+- [x] Thay khung mở rộng bằng giao diện Mua hàng/Nhà cung cấp
+- [x] Bổ sung test validation, quyền và tổng hợp đơn mua

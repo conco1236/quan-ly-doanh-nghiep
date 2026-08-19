@@ -260,6 +260,44 @@ export const qcResults = mysqlTable("qc_results", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, table => ({ batchIdx: index("qc_results_batch_idx").on(table.batchId), statusIdx: index("qc_results_status_idx").on(table.status) }));
 
+export const suppliers = mysqlTable("suppliers", {
+  id: int("id").autoincrement().primaryKey(),
+  supplierCode: varchar("supplierCode", { length: 40 }).notNull().unique(),
+  name: varchar("name", { length: 180 }).notNull(),
+  phone: varchar("phone", { length: 40 }),
+  email: varchar("email", { length: 160 }),
+  address: text("address"),
+  taxCode: varchar("taxCode", { length: 40 }),
+  status: mysqlEnum("status", ["active", "inactive"]).default("active").notNull(),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ ownerIdx: index("suppliers_created_by_idx").on(table.createdBy), nameIdx: index("suppliers_name_idx").on(table.name), statusIdx: index("suppliers_status_idx").on(table.status) }));
+
+export const purchaseOrders = mysqlTable("purchase_orders", {
+  id: int("id").autoincrement().primaryKey(),
+  purchaseCode: varchar("purchaseCode", { length: 80 }).notNull().unique(),
+  supplierId: int("supplierId").notNull(),
+  status: mysqlEnum("status", ["draft", "ordered", "partially_received", "received", "cancelled"]).default("draft").notNull(),
+  subtotal: decimal("subtotal", { precision: 16, scale: 2 }).default("0").notNull(),
+  total: decimal("total", { precision: 16, scale: 2 }).default("0").notNull(),
+  expectedAt: timestamp("expectedAt"),
+  note: text("note"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ supplierIdx: index("purchase_orders_supplier_idx").on(table.supplierId), statusIdx: index("purchase_orders_status_idx").on(table.status), ownerIdx: index("purchase_orders_created_by_idx").on(table.createdBy), createdIdx: index("purchase_orders_created_idx").on(table.createdAt) }));
+
+export const purchaseOrderItems = mysqlTable("purchase_order_items", {
+  id: int("id").autoincrement().primaryKey(),
+  orderId: int("orderId").notNull(),
+  ingredientId: int("ingredientId").notNull(),
+  quantity: decimal("quantity", { precision: 12, scale: 2 }).notNull(),
+  receivedQuantity: decimal("receivedQuantity", { precision: 12, scale: 2 }).default("0").notNull(),
+  unitPrice: decimal("unitPrice", { precision: 16, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 16, scale: 2 }).notNull(),
+}, table => ({ orderIdx: index("purchase_order_items_order_idx").on(table.orderId), ingredientIdx: index("purchase_order_items_ingredient_idx").on(table.ingredientId) }));
+
 export const financeAccounts = mysqlTable("finance_accounts", {
   id: int("id").autoincrement().primaryKey(),
   code: varchar("code", { length: 40 }).notNull().unique(),
@@ -332,6 +370,9 @@ export type Customer = typeof customers.$inferSelect;
 export type SalesOrder = typeof salesOrders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type WorkflowTask = typeof workflowTasks.$inferSelect;
+export type Supplier = typeof suppliers.$inferSelect;
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;
 export type FinanceAccount = typeof financeAccounts.$inferSelect;
 export type FinanceTransaction = typeof financeTransactions.$inferSelect;
 export type Receivable = typeof receivables.$inferSelect;
