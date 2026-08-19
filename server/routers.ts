@@ -29,8 +29,10 @@ const brandingUploadInput = z.object({ fileName: z.string().min(1).max(180), mim
 const brandingUpdateInput = z.object({ companyName: z.string().trim().min(1, "Tên công ty không được để trống").max(160), tagline: z.string().trim().min(1, "Slogan không được để trống").max(240), address: z.string().trim().max(300).default(""), hotline: z.string().trim().max(40).default(""), taxCode: z.string().trim().max(40).default(""), email: z.string().trim().max(320).default(""), website: z.string().trim().max(240).default("") });
 export function normalizeBrandingCopy(input: { companyName: string; tagline: string; address?: string; hotline?: string; taxCode?: string; email?: string; website?: string }) { const companyName = input.companyName.trim(); const tagline = input.tagline.trim(); const address = (input.address ?? "").trim(); const hotline = (input.hotline ?? "").trim(); const taxCode = (input.taxCode ?? "").trim(); const email = (input.email ?? "").trim(); const website = (input.website ?? "").trim(); if (!companyName) throw new Error("Tên công ty không được để trống"); if (!tagline) throw new Error("Slogan không được để trống"); if (companyName.length > 160) throw new Error("Tên công ty không được vượt quá 160 ký tự"); if (tagline.length > 240) throw new Error("Slogan không được vượt quá 240 ký tự"); if (address.length > 300) throw new Error("Địa chỉ không được vượt quá 300 ký tự"); if (hotline.length > 40) throw new Error("Hotline không được vượt quá 40 ký tự"); if (taxCode.length > 40) throw new Error("Mã số thuế không được vượt quá 40 ký tự"); if (email.length > 320) throw new Error("Email không được vượt quá 320 ký tự"); if (website.length > 240) throw new Error("Website không được vượt quá 240 ký tự"); return { companyName, tagline, address, hotline, taxCode, email, website }; }
 
+export function canManageBranding(role: "admin" | "user") { return role === "admin"; }
+
 const requireAdmin = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "admin") throw new Error("Bạn không có quyền truy cập khu vực quản trị");
+  if (!canManageBranding(ctx.user.role)) throw new Error("Bạn không có quyền truy cập khu vực quản trị");
   return next();
 });
 

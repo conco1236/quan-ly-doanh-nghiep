@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { normalizeBrandingCopy } from "./routers";
+import { canManageBranding, normalizeBrandingCopy } from "./routers";
+
+describe("Branding access policy", () => {
+  it("allows Admin and rejects Nhân viên for branding management", () => {
+    expect(canManageBranding("admin")).toBe(true);
+    expect(canManageBranding("user")).toBe(false);
+  });
+});
 
 describe("Branding copy validation", () => {
   it("trims company name and tagline before persistence", () => {

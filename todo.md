@@ -478,3 +478,11 @@
 - [x] Tài liệu biến môi trường, branding, storage và bảo mật
 - [x] Hướng dẫn test, build, GitHub workflow và troubleshooting
 - [x] Rà soát, commit và push README lên GitHub
+
+
+## Phân quyền Cấu hình thương hiệu
+
+- [x] Rà soát policy Admin/Nhân viên ở API branding và điều hướng
+- [x] Khóa mọi thao tác đọc/ghi branding không phù hợp với vai trò
+- [x] Hiển thị trạng thái quyền và màn hình từ chối truy cập cho Nhân viên
+- [x] Bổ sung test Admin/Nhân viên và chạy full validation
