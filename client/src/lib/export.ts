@@ -39,6 +39,8 @@ export type EmployeeSummaryPerson = { id: number; employeeCode?: string | null; 
 export const employeeMonthlySummaryHeaders = ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công", "Có mặt", "Đi muộn", "Vắng", "Ngày lễ", "Nghỉ phép theo công", "Ngày nghỉ được duyệt", "Phép năm đã duyệt", "Ốm đã duyệt", "Không lương đã duyệt", "Khác đã duyệt", "Đơn chờ duyệt"];
 export const departmentChartHeaders = ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"];
 
+export function filterByDepartments<T extends { employeeId: number }>(items: T[], people: EmployeeSummaryPerson[], departments: string[]): T[] { if (!departments.length) return items; const selected = new Set(departments); return items.filter(item => selected.has(people.find(person => person.id === item.employeeId)?.department || "Chưa phân phòng ban")); }
+
 export function buildDepartmentChartRows(summaryRows: ExportCell[][]): ExportCell[][] {
   const groups = new Map<string, { work: number; leave: number }>();
   for (const row of summaryRows) { const department = String(row[2] ?? "Chưa phân phòng ban"); const group = groups.get(department) ?? { work: 0, leave: 0 }; group.work += Number(row[4]) || 0; group.leave += Number(row[10]) || 0; groups.set(department, group); }

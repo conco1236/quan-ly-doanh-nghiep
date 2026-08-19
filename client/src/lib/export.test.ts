@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary, filterByDepartments } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -28,6 +28,16 @@ describe("native XLSX workbook", () => {
     expect(workbook.Sheets["Cham cong"]["B3"].f).toBe("COUNTA(B2:B2)");
     expect(workbook.Sheets["Cham cong"]["A3"].s.font.bold).toBe(true);
     expect(workbook.Sheets["Nghi phep"]["A3"].v).toBe("Tổng cộng");
+  });
+});
+
+describe("department filters", () => {
+  const people = [{ id: 1, fullName: "A", department: "Kho" }, { id: 2, fullName: "B", department: "Sản xuất" }, { id: 3, fullName: "C", department: null }];
+  const items = [{ employeeId: 1, value: "kho" }, { employeeId: 2, value: "sx" }, { employeeId: 3, value: "trống" }];
+  it("filters selected departments and keeps all rows when no selection", () => {
+    expect(filterByDepartments(items, people, ["Kho"]).map(item => item.value)).toEqual(["kho"]);
+    expect(filterByDepartments(items, people, ["Chưa phân phòng ban"]).map(item => item.value)).toEqual(["trống"]);
+    expect(filterByDepartments(items, people, []).length).toBe(3);
   });
 });
 

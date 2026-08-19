@@ -302,3 +302,12 @@
 - [x] Tích hợp sheet biểu đồ vào nút xuất XLSX HR
 - [x] Bổ sung test dữ liệu biểu đồ, series và sheet khi dữ liệu rỗng
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Lọc phòng ban trước khi xuất XLSX
+
+- [x] Tạo danh sách phòng ban duy nhất và tùy chọn Tất cả phòng ban
+- [x] Thêm state chọn nhiều phòng ban và lọc chấm công/nghỉ phép/nhân viên
+- [x] Áp dụng dữ liệu đã lọc cho sheet Tổng hợp và Bieu do
+- [x] Hiển thị số phòng ban và trạng thái bộ lọc trước khi xuất
+- [x] Bổ sung test lọc phòng ban, chọn Tất cả và dữ liệu rỗng
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
