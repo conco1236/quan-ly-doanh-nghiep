@@ -319,3 +319,11 @@
 - [x] Hiển thị nút preset cùng trạng thái đang áp dụng trong giao diện
 - [x] Bổ sung test ánh xạ preset, preset không có dữ liệu và chọn Tất cả
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Trạng thái xuất Excel
+
+- [x] Thêm trạng thái đang tạo và đang tải file Excel
+- [x] Khóa nút xuất để chống thao tác trùng trong lúc xử lý
+- [x] Hiển thị thông báo thành công kèm phạm vi và số dòng đã xuất
+- [x] Hiển thị thông báo thất bại thân thiện khi tạo hoặc tải file lỗi
+- [x] Bổ sung test trạng thái xuất và kiểm tra TypeScript/build/responsive
