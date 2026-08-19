@@ -1,6 +1,6 @@
 import { and, desc, eq, lt, sql, isNull, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, employees, attendanceRecords, leaveRequests, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles, financeAccounts, financeTransactions, receivables, payables, suppliers, purchaseOrders, purchaseOrderItems, maintenanceAssets, maintenanceSchedules, maintenanceTickets } from "../drizzle/schema";
+import { InsertUser, users, systemBranding, employees, attendanceRecords, leaveRequests, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles, financeAccounts, financeTransactions, receivables, payables, suppliers, purchaseOrders, purchaseOrderItems, maintenanceAssets, maintenanceSchedules, maintenanceTickets } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -10,6 +10,21 @@ export async function getDb() {
     try { _db = drizzle(process.env.DATABASE_URL); } catch (error) { console.warn("[Database] Failed to connect:", error); _db = null; }
   }
   return _db;
+}
+
+export async function getSystemBranding() {
+  const db = await getDb();
+  if (!db) return { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+  const [row] = await db.select().from(systemBranding).limit(1);
+  return row ?? { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+}
+
+export async function saveSystemBranding(input: { companyName?: string; tagline?: string; logoKey?: string | null; logoUrl?: string | null; logoMimeType?: string | null; logoSize?: number | null; updatedBy: number }) {
+  const db = await getDb(); if (!db) throw new Error("Database unavailable");
+  const current = await getSystemBranding();
+  const values = { id: 1, companyName: input.companyName ?? current.companyName, tagline: input.tagline ?? current.tagline, logoKey: input.logoKey === undefined ? current.logoKey : input.logoKey, logoUrl: input.logoUrl === undefined ? current.logoUrl : input.logoUrl, logoMimeType: input.logoMimeType === undefined ? current.logoMimeType : input.logoMimeType, logoSize: input.logoSize === undefined ? current.logoSize : input.logoSize, updatedBy: input.updatedBy };
+  await db.insert(systemBranding).values(values).onDuplicateKeyUpdate({ set: { companyName: values.companyName, tagline: values.tagline, logoKey: values.logoKey, logoUrl: values.logoUrl, logoMimeType: values.logoMimeType, logoSize: values.logoSize, updatedBy: values.updatedBy } });
+  return getSystemBranding();
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

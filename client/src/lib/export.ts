@@ -174,14 +174,17 @@ export function buildHrAttendanceReportSheets(attendance: AttendanceSummaryInput
   ];
 }
 
-export type PdfApprovalMeta = { approverName?: string; approverTitle?: string; companyName?: string; companyTagline?: string };
+export type PdfApprovalMeta = { approverName?: string; approverTitle?: string; companyName?: string; companyTagline?: string; logoDataUrl?: string; logoMimeType?: string };
 export function normalizePdfText(value: ExportCell) { return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }
-function drawBreweryLogo(doc: jsPDF, x: number, y: number) { doc.setFillColor(214, 167, 45); doc.roundedRect(x, y, 34, 34, 7, 7, "F"); doc.setTextColor(16, 42, 67); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("B", x + 10, y + 24); }
+function drawBreweryLogo(doc: jsPDF, x: number, y: number, logoDataUrl?: string, logoMimeType?: string) { if (logoDataUrl) { try { doc.addImage(logoDataUrl, logoMimeType === "image/jpeg" ? "JPEG" : "PNG", x, y, 34, 34, undefined, "FAST"); return; } catch { /* fallback to the built-in mark */ } } doc.setFillColor(214, 167, 45); doc.roundedRect(x, y, 34, 34, 7, 7, "F"); doc.setTextColor(16, 42, 67); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("B", x + 10, y + 24); }
+
+export async function loadImageAsDataUrl(url?: string | null) { if (!url) return undefined; try { const response = await fetch(url); if (!response.ok) return undefined; const blob = await response.blob(); return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob); }); } catch { return undefined; }
+}
 
 export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const companyName = approval.companyName ?? "BREWERYOS";
-  doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11);
+  doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11, approval.logoDataUrl, approval.logoMimeType);
   doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(normalizePdfText(companyName), 76, 27); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.companyTagline ?? "He thong quan tri nha may bia"), 76, 41); doc.setFontSize(18); doc.text(normalizePdfText(title), 590, 35, { align: "right" });
   doc.setTextColor(36, 59, 83); doc.setFontSize(9);
   let y = 82;

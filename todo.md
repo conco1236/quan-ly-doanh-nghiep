@@ -396,3 +396,13 @@
 - [x] Bổ sung thông tin người phê duyệt, chức danh và khu vực ký cuối PDF
 - [x] Truyền metadata phê duyệt cho báo cáo POS và HR
 - [x] Bổ sung test helper PDF metadata và chạy full validation
+
+
+## Logo công ty tùy chỉnh
+
+- [x] Tạo metadata lưu logo công ty và quyền owner/admin
+- [x] Thêm API upload/reset logo dùng S3 storage, kiểm tra MIME và kích thước
+- [x] Hiển thị logo tùy chỉnh trong PDF POS và HR, fallback logo mặc định
+- [x] Thêm giao diện tải lên/xem trước/xóa logo trong cài đặt
+- [x] Bổ sung test upload, quyền, validation và PDF logo
+- [x] Chạy full test, TypeScript, build và lưu checkpoint

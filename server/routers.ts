@@ -2,11 +2,12 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDb, dashboardSummary, listEmployees, listAttendanceRecords, listLeaveRequests, summarizeAttendanceMonthly, calculateInclusiveLeaveDays, getWorkflowAlerts, getPosReconciliation, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks, getProductionReport, getInventoryReport, getCostingReport, listFinanceAccounts, listFinanceTransactions, listReceivables, listPayables, summarizeFinanceTransactions, summarizeOutstanding, listSuppliers, listPurchaseOrders, listPurchaseOrderItems, summarizePurchaseOrders, listMaintenanceAssets, listMaintenanceSchedules, listMaintenanceTickets, summarizeMaintenance } from "./db";
+import { getDb, getSystemBranding, saveSystemBranding, dashboardSummary, listEmployees, listAttendanceRecords, listLeaveRequests, summarizeAttendanceMonthly, calculateInclusiveLeaveDays, getWorkflowAlerts, getPosReconciliation, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks, getProductionReport, getInventoryReport, getCostingReport, listFinanceAccounts, listFinanceTransactions, listReceivables, listPayables, summarizeFinanceTransactions, summarizeOutstanding, listSuppliers, listPurchaseOrders, listPurchaseOrderItems, summarizePurchaseOrders, listMaintenanceAssets, listMaintenanceSchedules, listMaintenanceTickets, summarizeMaintenance } from "./db";
 import { employees, attendanceRecords, leaveRequests, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, users, auditLogs, workflowTasks, qcStandards, qcResults, deviceSessions, financeAccounts, financeTransactions, receivables, payables, suppliers, purchaseOrders, purchaseOrderItems, maintenanceAssets, maintenanceSchedules, maintenanceTickets } from "../drizzle/schema";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
 import { getRequestMeta, recordAudit } from "./erp-security";
+import { storagePut } from "./storage";
 
 const idInput = z.object({ id: z.number().int().positive() });
 const ingredientInput = z.object({ name: z.string().min(1), unit: z.string().min(1), stockQuantity: z.number().nonnegative(), lowStockThreshold: z.number().nonnegative(), supplier: z.string().optional(), notes: z.string().optional() });
@@ -24,6 +25,7 @@ const purchaseOrderInput = z.object({ purchaseCode: z.string().min(1).max(80), s
 const assetInput = z.object({ assetCode: z.string().min(1).max(50), name: z.string().min(1).max(180), category: z.string().max(100).optional(), location: z.string().max(160).optional(), installedAt: z.coerce.date().optional() });
 const scheduleInput = z.object({ assetId: z.number().int().positive(), title: z.string().min(1).max(180), frequencyDays: z.number().int().positive(), nextDueAt: z.coerce.date() });
 const ticketInput = z.object({ ticketCode: z.string().min(1).max(80), assetId: z.number().int().positive(), title: z.string().min(1).max(180), description: z.string().optional(), priority: z.enum(["low", "medium", "high", "critical"]).default("medium") });
+const brandingUploadInput = z.object({ fileName: z.string().min(1).max(180), mimeType: z.enum(["image/png", "image/jpeg"]), dataBase64: z.string().min(100).max(7_000_000), companyName: z.string().min(1).max(160).optional(), tagline: z.string().max(240).optional() });
 
 const requireAdmin = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new Error("Bạn không có quyền truy cập khu vực quản trị");
@@ -45,6 +47,24 @@ export function resolveQcThresholdForBatch<T extends { beerTypeId: number }, S e
 
 export const appRouter = router({
   system: systemRouter,
+  branding: router({
+    get: protectedProcedure.query(() => getSystemBranding()),
+    upload: requireAdmin.input(brandingUploadInput).mutation(async ({ input, ctx }) => {
+      const raw = input.dataBase64.replace(/^data:[^;]+;base64,/, "");
+      const bytes = Buffer.from(raw, "base64");
+      if (!bytes.length || bytes.length > 5 * 1024 * 1024) throw new Error("Logo phải có dung lượng từ 1 byte đến 5 MB");
+      const extension = input.mimeType === "image/png" ? "png" : "jpg";
+      const stored = await storagePut(`branding/company-logo.${extension}`, bytes, input.mimeType, { ownerId: ctx.user.id, referenced: true });
+      const saved = await saveSystemBranding({ companyName: input.companyName, tagline: input.tagline, logoKey: stored.key, logoUrl: stored.url, logoMimeType: input.mimeType, logoSize: bytes.length, updatedBy: ctx.user.id });
+      await recordAudit({ tableName: "system_branding", recordId: 1, action: "update", actorId: ctx.user.id, oldValue: null, newValue: { logoKey: stored.key, logoSize: bytes.length }, meta: getRequestMeta(ctx.req) });
+      return saved;
+    }),
+    reset: requireAdmin.mutation(async ({ ctx }) => {
+      const saved = await saveSystemBranding({ logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: ctx.user.id });
+      await recordAudit({ tableName: "system_branding", recordId: 1, action: "update", actorId: ctx.user.id, oldValue: null, newValue: { logoKey: null }, meta: getRequestMeta(ctx.req) });
+      return saved;
+    }),
+  }),
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),

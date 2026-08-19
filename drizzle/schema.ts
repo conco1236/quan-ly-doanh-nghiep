@@ -12,6 +12,19 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const systemBranding = mysqlTable("system_branding", {
+  id: int("id").autoincrement().primaryKey(),
+  companyName: varchar("companyName", { length: 160 }).default("BREWERYOS").notNull(),
+  tagline: varchar("tagline", { length: 240 }).default("He thong quan tri nha may bia").notNull(),
+  logoKey: varchar("logoKey", { length: 500 }),
+  logoUrl: varchar("logoUrl", { length: 700 }),
+  logoMimeType: varchar("logoMimeType", { length: 80 }),
+  logoSize: int("logoSize"),
+  updatedBy: int("updatedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export const employees = mysqlTable("employees", {
   id: int("id").autoincrement().primaryKey(),
   employeeCode: varchar("employeeCode", { length: 40 }).notNull().unique(),
