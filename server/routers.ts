@@ -2,7 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDb, dashboardSummary, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks } from "./db";
+import { getDb, dashboardSummary, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks, getProductionReport, getInventoryReport } from "./db";
 import { ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, users, auditLogs, workflowTasks, qcStandards, qcResults, deviceSessions } from "../drizzle/schema";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
@@ -38,6 +38,10 @@ export const appRouter = router({
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
   }),
   dashboard: router({ summary: protectedProcedure.query(() => dashboardSummary()) }),
+  reports: router({
+    production: protectedProcedure.input(z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() }).optional()).query(({ input, ctx }) => getProductionReport({ ...input, ownerId: ctx.user.role === "admin" ? undefined : ctx.user.id })),
+    inventory: protectedProcedure.input(z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() }).optional()).query(({ input, ctx }) => getInventoryReport({ ...input, ownerId: ctx.user.role === "admin" ? undefined : ctx.user.id })),
+  }),
   ingredients: router({
     list: protectedProcedure.query(({ ctx }) => listIngredients(ctx.user.role === "admin" ? undefined : ctx.user.id)),
     page: protectedProcedure.input(z.object({ limit: z.number().int().min(1).max(500).default(100), cursor: z.number().int().positive().optional() })).query(({ input, ctx }) => listIngredientsPage({ ...input, ownerId: ctx.user.role === "admin" ? undefined : ctx.user.id })),

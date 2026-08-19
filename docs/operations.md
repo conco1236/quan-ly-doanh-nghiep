@@ -21,7 +21,13 @@ Quản trị viên tạo policy với một hoặc nhiều CIDR mạng công ty,
 
 ## 4. Workflow và Heartbeat
 
-Không dùng `setInterval`, `node-cron` hoặc timer trong tiến trình web. Callback cần bắt đầu bằng `/api/scheduled/`, xác thực cron bằng SDK, tra dòng nghiệp vụ theo `taskUid`, chạy idempotent và trả JSON lỗi khi thất bại. Sau khi callback được checkpoint, người quản trị phải Deploy site rồi mới tạo lịch. Heartbeat là nơi phù hợp cho nhắc việc workflow; auto-clean tệp chỉ được bật khi metadata tệp và quyền listing storage đã được kết nối.
+Không dùng `setInterval`, `node-cron` hoặc timer trong tiến trình web. Callback cần bắt đầu bằng `/api/scheduled/`, xác thực cron bằng SDK, tra dòng nghiệp vụ theo `taskUid`, chạy idempotent và trả JSON lỗi khi thất bại. Sau khi callback được checkpoint, người quản trị phải Deploy site rồi mới tạo lịch. Heartbeat là nơi phù hợp cho nhắc việc workflow.
+
+### Auto-Clean tệp mồ côi
+
+BreweryOS đã có callback `POST /api/scheduled/storage-cleanup`. Callback này chạy idempotent, chọn các bản ghi `stored_files` có `referenced = no`, chưa có `deletedAt` và cũ hơn 30 ngày, sau đó xóa metadata khỏi database. Lớp storage hiện tại không cung cấp thao tác xóa object vật lý; vì vậy cơ chế hiện hành là vô hiệu hóa đường dẫn truy cập bằng cách xóa metadata, không phải cam kết thu hồi byte trên mọi backend storage.
+
+Sau khi triển khai phiên bản có callback, quản trị viên tạo lịch cấp project bằng cron sáu trường UTC, ví dụ `0 0 3 * * *` cho 03:00 UTC mỗi ngày, với path `/api/scheduled/storage-cleanup`. Phải lưu `task_uid` trả về trong cấu hình vận hành; không tạo lịch trước khi site production đã được Deploy. Có thể kiểm tra lịch và log thực thi bằng công cụ quản lý Heartbeat của Manus. Nếu storage listing/quyền xóa object được tích hợp về sau, cần mở rộng callback và test idempotency trước khi coi Auto-Clean là dọn byte vật lý.
 
 ## 5. Hiệu năng và kiểm thử
 

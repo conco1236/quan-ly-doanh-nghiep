@@ -210,3 +210,17 @@
 - [x] Đổi mô tả admin guard thành admin query + protected mutation vì hiện chưa có admin mutation nghiệp vụ
 - [x] Tách helper persistStoredFileMetadata dùng DB mặc định để test insert stored_files không cần upload thật
 - [x] Tách helper cleanupStoredFileMetadata nhận delete function để test idempotent implementation thay vì chỉ test selector
+
+## Báo cáo thống kê Sản xuất và Kho bãi
+
+- [x] Thiết kế API thống kê sản xuất theo trạng thái, công đoạn và ngày tạo lô
+- [x] Thiết kế API thống kê kho theo tồn hiện tại, ngưỡng cảnh báo và giao dịch nhập/xuất
+- [x] Thêm bộ lọc khoảng thời gian và phân hệ cho màn hình báo cáo
+- [x] Thêm biểu đồ trực quan cho sản xuất và kho bãi bằng dữ liệu database thật
+- [x] Thêm trạng thái loading, empty, error và responsive cho báo cáo
+- [x] Bổ sung unit tests cho phép tổng hợp dữ liệu báo cáo
+- [x] Kiểm tra TypeScript, Vitest, build và screenshot giao diện báo cáo
+- [x] Bổ sung thống kê sản xuất theo công đoạn từ production_steps và hiển thị trên báo cáo
+- [x] Thêm bộ lọc phân hệ Tất cả / Sản xuất / Kho bãi và áp dụng điều kiện tải/hiển thị
+- [x] Bổ sung test byStatus/byDay sản xuất và totalStock/lowStockCount/movementsByDay kho
+- [x] Áp dụng bộ lọc phân hệ cho toàn bộ KPI đầu trang

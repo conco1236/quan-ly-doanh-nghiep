@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, sql, isNull } from "drizzle-orm";
+import { and, desc, eq, lt, sql, isNull, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -99,4 +99,45 @@ export function crossSheetTargetTables(tableName: string): string[] {
     ingredients: ["ingredients", "inventory_transactions"],
   };
   return mapping[tableName] ?? [];
+}
+
+export type ReportRange = { from?: Date; to?: Date; ownerId?: number };
+
+export function summarizeProductionSteps(rows: Array<{ stepType: string; status: string }>) {
+  const byStep = new Map<string, { stepType: string; total: number; pending: number; inProgress: number; completed: number }>();
+  for (const row of rows) { const stepType = String(row.stepType); const current = byStep.get(stepType) ?? { stepType, total: 0, pending: 0, inProgress: 0, completed: 0 }; current.total += 1; if (row.status === "pending") current.pending += 1; else if (row.status === "in_progress") current.inProgress += 1; else current.completed += 1; byStep.set(stepType, current); }
+  return Array.from(byStep.values());
+}
+
+export function summarizeInventoryRows(items: Array<{ id: number; name: string; unit: string; stockQuantity: unknown; lowStockThreshold: unknown }>, transactions: Array<{ type: string; quantity: unknown; createdAt: Date | string }>) {
+  const movements = new Map<string, { date: string; inbound: number; outbound: number }>();
+  for (const tx of transactions) { const date = new Date(tx.createdAt).toISOString().slice(0, 10); const current = movements.get(date) ?? { date, inbound: 0, outbound: 0 }; if (tx.type === "in") current.inbound += Number(tx.quantity); else current.outbound += Number(tx.quantity); movements.set(date, current); }
+  return { totalItems: items.length, totalStock: items.reduce((sum, item) => sum + Number(item.stockQuantity ?? 0), 0), lowStockCount: items.filter(item => Number(item.stockQuantity) <= Number(item.lowStockThreshold)).length, topStock: [...items].sort((a, b) => Number(b.stockQuantity) - Number(a.stockQuantity)).slice(0, 8), movementsByDay: Array.from(movements.values()).sort((a, b) => a.date.localeCompare(b.date)) };
+}
+
+export async function getProductionReport(range: ReportRange = {}) {
+  const db = await getDb();
+  if (!db) return { totalBatches: 0, plannedQuantity: 0, actualQuantity: 0, byStatus: [], byDay: [], byStep: [] };
+  const filters = [range.ownerId ? eq(productionBatches.createdBy, range.ownerId) : undefined, range.from ? gte(productionBatches.createdAt, range.from) : undefined, range.to ? lte(productionBatches.createdAt, range.to) : undefined].filter(Boolean) as any[];
+  const rows = await db.select({ id: productionBatches.id, status: productionBatches.status, createdAt: productionBatches.createdAt, plannedQuantity: productionBatches.plannedQuantity, actualQuantity: productionBatches.actualQuantity }).from(productionBatches).where(filters.length ? and(...filters) : undefined);
+  const byStatus = new Map<string, { status: string; count: number; plannedQuantity: number; actualQuantity: number }>();
+  const byDay = new Map<string, { date: string; batches: number; actualQuantity: number }>();
+  for (const row of rows) {
+    const status = String(row.status); const current = byStatus.get(status) ?? { status, count: 0, plannedQuantity: 0, actualQuantity: 0 }; current.count += 1; current.plannedQuantity += Number(row.plannedQuantity ?? 0); current.actualQuantity += Number(row.actualQuantity ?? 0); byStatus.set(status, current);
+    const date = new Date(row.createdAt).toISOString().slice(0, 10); const daily = byDay.get(date) ?? { date, batches: 0, actualQuantity: 0 }; daily.batches += 1; daily.actualQuantity += Number(row.actualQuantity ?? 0); byDay.set(date, daily);
+  }
+  const stepFilters = [range.ownerId ? eq(productionBatches.createdBy, range.ownerId) : undefined, range.from ? gte(productionBatches.createdAt, range.from) : undefined, range.to ? lte(productionBatches.createdAt, range.to) : undefined].filter(Boolean) as any[];
+  const stepRows = await db.select({ stepType: productionSteps.stepType, status: productionSteps.status }).from(productionSteps).innerJoin(productionBatches, eq(productionSteps.batchId, productionBatches.id)).where(stepFilters.length ? and(...stepFilters) : undefined);
+  const byStep = summarizeProductionSteps(stepRows);
+  return { totalBatches: rows.length, plannedQuantity: rows.reduce((sum, row) => sum + Number(row.plannedQuantity ?? 0), 0), actualQuantity: rows.reduce((sum, row) => sum + Number(row.actualQuantity ?? 0), 0), byStatus: Array.from(byStatus.values()), byDay: Array.from(byDay.values()).sort((a, b) => a.date.localeCompare(b.date)), byStep };
+}
+
+export async function getInventoryReport(range: ReportRange = {}) {
+  const db = await getDb();
+  if (!db) return { totalItems: 0, totalStock: 0, lowStockCount: 0, topStock: [], movementsByDay: [] };
+  const ingredientFilters = range.ownerId ? [eq(ingredients.createdBy, range.ownerId)] : [];
+  const items = await db.select({ id: ingredients.id, name: ingredients.name, unit: ingredients.unit, stockQuantity: ingredients.stockQuantity, lowStockThreshold: ingredients.lowStockThreshold }).from(ingredients).where(ingredientFilters.length ? and(...ingredientFilters) : undefined);
+  const transactionFilters = [range.ownerId ? eq(inventoryTransactions.createdBy, range.ownerId) : undefined, range.from ? gte(inventoryTransactions.createdAt, range.from) : undefined, range.to ? lte(inventoryTransactions.createdAt, range.to) : undefined].filter(Boolean) as any[];
+  const transactions = await db.select({ type: inventoryTransactions.type, quantity: inventoryTransactions.quantity, createdAt: inventoryTransactions.createdAt }).from(inventoryTransactions).where(transactionFilters.length ? and(...transactionFilters) : undefined);
+  return summarizeInventoryRows(items, transactions);
 }
