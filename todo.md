@@ -378,3 +378,13 @@
 - [x] Thêm API monthlySummary và danh sách đơn chờ duyệt cho quản trị
 - [x] Hiển thị KPI bảng công tháng và cảnh báo đơn nghỉ chờ duyệt
 - [x] Bổ sung test tổng hợp ngày công theo tháng và quyền duyệt
+
+
+## Xuất báo cáo POS và HR dạng Excel/PDF
+
+- [x] Tạo helper dữ liệu và workbook đối soát doanh thu POS
+- [x] Tạo helper workbook bảng công HR theo tháng và phạm vi phòng ban
+- [x] Thêm xuất PDF báo cáo POS và HR với bố cục in được
+- [x] Tích hợp nút Excel/PDF, trạng thái loading/thành công/thất bại vào Finance và HR
+- [x] Bổ sung test dữ liệu, công thức/tổng hợp và tên file xuất
+- [x] Chạy full test, TypeScript, build, responsive và lưu checkpoint

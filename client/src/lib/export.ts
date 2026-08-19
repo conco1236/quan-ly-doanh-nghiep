@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx-js-style";
+import { jsPDF } from "jspdf";
 
-export type ExportCell = string | number | null | undefined;
+export type ExportCell = string | number | Date | null | undefined;
 
 export function escapeCsvCell(value: ExportCell) {
   const text = String(value ?? "");
@@ -137,4 +138,58 @@ export function downloadXlsx(filename: string, sheets: ExcelSheet[]) {
   const workbook = buildXlsxWorkbook(sheets);
   const content = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
   downloadBlob(content, filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+}
+
+
+export type PosReconciliationReport = { posRevenue: number; reconciledRevenue: number; difference: number; completedOrders: number; linkedReceipts: number; generatedAt?: Date };
+
+export function buildPosReconciliationSheets(report: PosReconciliationReport): ExcelSheet[] {
+  const generated = report.generatedAt ?? new Date();
+  return [{
+    name: "Doi soat POS",
+    headers: ["Chỉ tiêu", "Giá trị", "Ghi chú"],
+    rows: [
+      ["Doanh thu POS hoàn tất", report.posRevenue, "Tổng đơn có trạng thái hoàn thành"],
+      ["Doanh thu đã ghi nhận", report.reconciledRevenue, "Phiếu thu income/posted, referenceType=pos"],
+      ["Chênh lệch cần xử lý", report.difference, report.difference === 0 ? "Đã khớp" : "Cần kiểm tra"],
+      ["Số đơn hoàn tất", report.completedOrders, ""],
+      ["Số phiếu thu POS", report.linkedReceipts, ""],
+      ["Thời điểm xuất", generated.toLocaleString("vi-VN"), "Nguồn: Finance reconciliation"],
+    ],
+  }];
+}
+
+export function buildHrAttendanceReportSheets(attendance: AttendanceSummaryInput[], leaves: LeaveSummaryInput[], people: EmployeeSummaryPerson[], month?: string): ExcelSheet[] {
+  const filteredAttendance = month ? attendance.filter(item => summaryMonth(item.workDate) === month) : attendance;
+  const filteredLeaves = month ? leaves.filter(item => summaryMonth(item.startDate) === month) : leaves;
+  const peopleById = new Map(people.map(person => [person.id, person]));
+  const attendanceRows = filteredAttendance.map(item => { const person = peopleById.get(item.employeeId); return [person?.fullName ?? `Nhân viên #${item.employeeId}`, person?.employeeCode ?? "", person?.department ?? "Chưa phân phòng ban", item.workDate instanceof Date ? item.workDate : new Date(item.workDate), item.status]; });
+  const leaveRows = filteredLeaves.map(item => { const person = peopleById.get(item.employeeId); return [person?.fullName ?? `Nhân viên #${item.employeeId}`, person?.employeeCode ?? "", person?.department ?? "Chưa phân phòng ban", item.startDate instanceof Date ? item.startDate : new Date(item.startDate), item.totalDays, item.leaveType, item.status]; });
+  const summaryRows = buildEmployeeMonthlySummary(filteredAttendance, filteredLeaves, people);
+  return [
+    { name: "Cham cong", headers: ["Nhân viên", "Mã nhân viên", "Phòng ban", "Ngày", "Trạng thái"], rows: attendanceRows, groupByColumn: 2 },
+    { name: "Nghi phep", headers: ["Nhân viên", "Mã nhân viên", "Phòng ban", "Ngày bắt đầu", "Số ngày", "Loại phép", "Trạng thái"], rows: leaveRows, groupByColumn: 2 },
+    { name: "Tong hop", headers: employeeMonthlySummaryHeaders, rows: summaryRows, groupByColumn: 2 },
+    { name: "Bieu do", headers: departmentChartHeaders, rows: buildDepartmentChartRows(summaryRows), visualBarColumns: [{ sourceColumn: 1, targetColumn: 5, divisor: 1, color: "D6A72D" }, { sourceColumn: 2, targetColumn: 6, divisor: 1, color: "2CB67D" }] },
+  ];
+}
+
+function pdfText(value: ExportCell) { return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }
+
+export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[]) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F");
+  doc.setTextColor(255, 255, 255); doc.setFontSize(18); doc.text(pdfText(title), 32, 35);
+  doc.setTextColor(36, 59, 83); doc.setFontSize(9);
+  let y = 82;
+  for (const line of summary ?? []) { doc.text(pdfText(line), 32, y); y += 15; }
+  y += 8;
+  const columnWidth = 778 / headers.length; const rowHeight = 20;
+  doc.setFillColor(214, 167, 45); doc.rect(32, y, 778, rowHeight, "F");
+  doc.setTextColor(16, 42, 67); doc.setFontSize(8);
+  headers.forEach((header, index) => doc.text(pdfText(header), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 }));
+  y += rowHeight;
+  rows.slice(0, 28).forEach((row, rowIndex) => { if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(32, y, 778, rowHeight, "F"); } doc.setTextColor(36, 59, 83); row.forEach((value, index) => doc.text(pdfText(value), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 })); y += rowHeight; });
+  doc.setFontSize(8); doc.setTextColor(98, 125, 152); doc.text(`BreweryOS · Xuất lúc ${new Date().toLocaleString("vi-VN")}`, 32, 570);
+  doc.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
 }

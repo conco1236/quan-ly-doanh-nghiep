@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -28,6 +28,24 @@ describe("native XLSX workbook", () => {
     expect(workbook.Sheets["Cham cong"]["B3"].f).toBe("COUNTA(B2:B2)");
     expect(workbook.Sheets["Cham cong"]["A3"].s.font.bold).toBe(true);
     expect(workbook.Sheets["Nghi phep"]["A3"].v).toBe("Tổng cộng");
+  });
+});
+
+describe("POS and HR report workbooks", () => {
+  it("builds POS reconciliation report with difference and counts", () => {
+    const sheets = buildPosReconciliationSheets({ posRevenue: 1200000, reconciledRevenue: 1000000, difference: 200000, completedOrders: 12, linkedReceipts: 10 });
+    expect(sheets[0].name).toBe("Doi soat POS");
+    expect(sheets[0].rows[0]).toEqual(["Doanh thu POS hoàn tất", 1200000, "Tổng đơn có trạng thái hoàn thành"]);
+    expect(sheets[0].rows[2][1]).toBe(200000);
+    expect(buildXlsxWorkbook(sheets).Sheets["Doi soat POS"]["A8"].v).toBe("Tổng cộng");
+  });
+  it("builds HR sheets filtered by month with summary and chart", () => {
+    const sheets = buildHrAttendanceReportSheets([{ employeeId: 1, workDate: "2026-08-01T00:00:00Z", status: "present" }, { employeeId: 1, workDate: "2026-09-01T00:00:00Z", status: "absent" }], [{ employeeId: 1, startDate: "2026-08-10T00:00:00Z", totalDays: 2, leaveType: "annual", status: "approved" }], [{ id: 1, employeeCode: "E01", fullName: "A", department: "Sản xuất" }], "2026-08");
+    expect(sheets.map(sheet => sheet.name)).toEqual(["Cham cong", "Nghi phep", "Tong hop", "Bieu do"]);
+    expect(sheets[0].rows).toHaveLength(1);
+    expect(sheets[1].rows).toHaveLength(1);
+    expect(sheets[2].rows[0][3]).toBe("2026-08");
+    expect(sheets[3].rows[0][0]).toBe("Sản xuất");
   });
 });
 
