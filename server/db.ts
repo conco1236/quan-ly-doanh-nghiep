@@ -1,6 +1,6 @@
-import { and, desc, eq, lt, sql } from "drizzle-orm";
+import { and, desc, eq, lt, sql, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults } from "../drizzle/schema";
+import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,8 @@ export async function getCrossSheetLinks(input: { tableName: string; recordId: n
   }
   return { source: null, customer: [], orders: [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: [], qcResults: [] };
 }
+
+export async function cleanupOrphanedStoredFiles(olderThan: Date) { const db = await getDb(); if (!db) return { deleted: 0 }; const candidates = await db.select({ id: storedFiles.id }).from(storedFiles).where(and(eq(storedFiles.referenced, "no"), isNull(storedFiles.deletedAt), lt(storedFiles.createdAt, olderThan))); if (candidates.length) await db.delete(storedFiles).where(and(eq(storedFiles.referenced, "no"), isNull(storedFiles.deletedAt), lt(storedFiles.createdAt, olderThan))); return { deleted: candidates.length }; }
 
 export function crossSheetTargetTables(tableName: string): string[] {
   const mapping: Record<string, string[]> = {

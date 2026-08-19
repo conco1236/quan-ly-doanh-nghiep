@@ -167,6 +167,15 @@ export const accessPolicies = mysqlTable("access_policies", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const storedFiles = mysqlTable("stored_files", {
+  id: int("id").autoincrement().primaryKey(),
+  storageKey: varchar("storageKey", { length: 320 }).notNull().unique(),
+  ownerId: int("ownerId"),
+  referenced: mysqlEnum("referenced", ["yes", "no"]).default("no").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
+}, table => ({ ownerIdx: index("stored_files_owner_idx").on(table.ownerId), referenceIdx: index("stored_files_reference_idx").on(table.referenced, table.deletedAt) }));
+
 export const workflowTasks = mysqlTable("workflow_tasks", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 200 }).notNull(),
@@ -214,3 +223,4 @@ export type Customer = typeof customers.$inferSelect;
 export type SalesOrder = typeof salesOrders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type WorkflowTask = typeof workflowTasks.$inferSelect;
+export type StoredFile = typeof storedFiles.$inferSelect;

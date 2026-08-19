@@ -8,7 +8,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { sdk } from "./sdk";
-import { getDb } from "../db";
+import { getDb, cleanupOrphanedStoredFiles } from "../db";
 import { workflowTasks } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { serveStatic, setupVite } from "./vite";
@@ -40,6 +40,17 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.post("/api/scheduled/storage-cleanup", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const olderThan = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const result = await cleanupOrphanedStoredFiles(olderThan);
+      return res.json({ ok: true, ...result });
+    } catch (error) {
+      return res.status(500).json({ error: error instanceof Error ? error.message : "storage-cleanup-failed", timestamp: new Date().toISOString() });
+    }
+  });
   app.post("/api/scheduled/workflow-reminders", async (req, res) => {
     try {
       const user = await sdk.authenticateRequest(req);

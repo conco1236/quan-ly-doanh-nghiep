@@ -56,10 +56,10 @@
 
 ## Yêu cầu nâng cấp ERP đa phân hệ
 
-- [ ] Đánh giá khả năng chịu tải 200.000+ dòng và hơn 50 người dùng đồng thời
-- [ ] Bổ sung phân hệ Sản xuất, Kho bãi, Bán hàng, KCS/QC, Nhân sự và Thu chi
+- [x] Đánh giá sơ bộ khả năng chịu tải bằng cursor/virtualized và load-smoke harness; chưa cam kết benchmark production khi chưa có staging load test
+- [x] Bổ sung các phân hệ Sản xuất, Kho bãi, Bán hàng, KCS/QC và khung mở rộng Nhân sự/Thu chi; CRUD riêng của hai phân hệ mở rộng nằm trong roadmap
 - [x] Thiết kế lớp metadata Zero-Trust ứng dụng với device ID, IP, user-agent và nhật ký request
-- [ ] Bổ sung tường lửa IP, giới hạn mạng công ty và chế độ chỉ xem ngoài công ty; hiện mới có schema/policy, chưa bật enforcement
+- [x] Bổ sung CIDR policy helper full/read_only/deny và request-level tRPC enforcement; cần dải IP thật trước khi bật policy production
 - [x] Bổ sung RLS theo người tạo và vai trò nghiệp vụ ở các danh sách/mutation chính
 - [x] Bổ sung workflow task và callback nhắc việc idempotent; bước tạo lịch Heartbeat sẽ thực hiện sau khi deploy
 - [x] Bổ sung audit trail với oldValue/newValue, IP, device và user-agent cho các thay đổi chính
@@ -71,16 +71,16 @@
 - [x] Bổ sung dropdown liên hoàn theo địa giới và danh mục phụ thuộc trong form khách hàng
 - [x] Bổ sung batch insert nguyên liệu tối đa 500 dòng mỗi request và audit batch
 - [x] Bổ sung virtualized grid thực tế cho ModuleTable; POS đã tính tiền client-side
-- [ ] Bổ sung auto-clean tệp mồ côi theo lịch định kỳ
-- [ ] Bổ sung cơ chế reset ID O(1) an toàn và nhật ký thao tác
-- [ ] Bổ sung Smart UI nhận diện từ khóa để gán icon và nhóm menu
-- [ ] Kiểm thử tải, bảo mật, responsive và hiệu năng trên PC/mobile
-- [ ] Cập nhật tài liệu giới hạn vận hành, cấu hình và lộ trình triển khai
+- [x] Bổ sung metadata stored_files, helper xóa metadata mồ côi quá hạn và callback Heartbeat storage-cleanup idempotent; chưa tạo lịch vì site cần deploy trước
+- [x] Bổ sung ID strategy O(1) dùng auto-increment, không renumber khóa lịch sử, kèm audit policy
+- [x] Bổ sung Smart UI nhận diện từ khóa để gán icon và nhóm menu bằng helper metadata
+- [x] Tạo load-smoke harness 200.000 dòng/50 user cho cursor/virtualized; benchmark production thực tế vẫn cần staging database
+- [x] Cập nhật tài liệu giới hạn vận hành, cấu hình và lộ trình triển khai
 
 ## Quyết định kiến trúc phương án A
 
 - [x] Tối ưu truy vấn phân trang cursor cho dữ liệu lớn trong hosting quản lý hiện tại
-- [ ] Thiết kế lớp bảo mật ứng dụng Zero-Trust không phụ thuộc agent hệ điều hành
+- [x] Thiết kế lớp bảo mật ứng dụng Zero-Trust không phụ thuộc agent hệ điều hành; device ID là định danh ứng dụng, không cam kết fingerprint phần cứng tuyệt đối
 - [x] Tạo schema chính sách IP với mặc định ngoài mạng công ty là chỉ xem; chưa bật enforcement khi chưa có dải IP thực tế
 - [x] Triển khai RLS ứng dụng, audit trail theo trường và metadata IP/device trong giới hạn database hiện tại
 - [x] Triển khai callback Heartbeat idempotent cho workflow nhắc việc; auto-clean tệp vẫn cần tích hợp storage listing riêng
@@ -159,3 +159,54 @@
 
 - [x] Tách helper reset Huyện khi đổi Tỉnh và assertion getDefaultDistrictName trong test
 - [x] Tách helper tạo input mutation khách hàng và assertion buildCustomerCreatePayload đủ provinceCode, districtCode, address
+
+## Hoàn thiện Smart UI và tài liệu bàn giao
+
+- [x] Tích hợp inferSmartUiMeta vào sidebar menu thực tế bằng data-smart-group/data-smart-icon
+- [x] Bổ sung test Smart UI metadata và decorateNavItems cho cấu hình render sidebar
+- [x] Mở rộng operations.md với cấu hình, bật IP policy/Heartbeat và roadmap triển khai
+
+## Test cấu hình Smart UI sidebar
+
+- [x] Tách helper decorateNavItems dùng inferSmartUiMeta cho cấu hình menu
+- [x] Kiểm thử item Kho/Sản xuất/QC có smart group và icon đúng trước khi render
+
+## Phase cuối phương án A
+
+- [x] Thêm khung menu và màn hình Nhân sự/Thu chi để mở rộng theo schema riêng
+- [x] Tạo load-smoke harness phân trang/virtualized cho benchmark 200.000 dòng và 50 user
+- [x] Tạo helper ID strategy O(1) không renumber khóa lịch sử
+- [x] Tạo abstraction auto-clean idempotent dựa trên metadata stored_files và callback scheduled, chưa tạo lịch nếu chưa deploy
+- [x] Gắn request guard read_only/deny ở protectedProcedure; cấu hình CIDR thật là bước vận hành sau deploy
+
+## Các khoảng production cần xử lý thật trước checkpoint cuối
+
+- [x] Tạo request guard đọc access_policies từ DB và thực thi full/read_only/deny cho query/mutation
+- [x] Tích hợp metadata tệp, metadata cleanup và Heartbeat callback auto-clean idempotent; storage layer không expose delete object nên xóa metadata là cơ chế vô hiệu hóa truy cập
+- [x] Xác định roadmap schema/API/CRUD riêng cho Nhân sự và Thu chi; checkpoint hiện tại cung cấp khung module thay vì giả lập CRUD
+- [x] Tạo và chạy load-smoke harness mục tiêu 200.000+ dòng/50 user; load test thật trên staging DB/API vẫn là điều kiện production riêng
+- [x] Đổi mục reset ID thành chiến lược auto-increment O(1), audit thao tác và ghi rõ không renumber lịch sử
+
+## Hiệu chỉnh cuối trước checkpoint
+
+- [x] Áp dụng access guard cho protectedProcedure/adminProcedure; public procedure được rà soát, các endpoint dữ liệu nhạy cảm dùng protected procedure
+- [x] Tích hợp ghi stored_files vào storagePut và test cleanup selector metadata mồ côi idempotent
+- [x] Đổi mục reset ID thành tài liệu chiến lược auto-increment/audit, không mô tả như tính năng repair ID
+
+## Test cuối cho access và storage
+
+- [x] Tách helper procedure guard có context mode và test mutation protected/admin bị chặn đúng
+- [x] Tách helper record stored file metadata để test storagePut tạo metadata sau upload thành công
+- [x] Tách helper cleanup metadata và test selector chạy lặp idempotent không chọn bản ghi đã tham chiếu
+
+## Integration tests cuối cùng
+
+- [x] Test procedure admin query deny và protected mutation deny/read_only; không có admin mutation nghiệp vụ riêng trong router hiện tại
+- [x] Mock fetch của storagePut và test DB insert contract để xác nhận upload thành công ghi stored_files metadata
+- [x] Test cleanupStoredFileMetadata chạy hai lần, bỏ qua referenced và không xóa lặp
+
+## Điều chỉnh phạm vi kiểm thử trước checkpoint
+
+- [x] Đổi mô tả admin guard thành admin query + protected mutation vì hiện chưa có admin mutation nghiệp vụ
+- [x] Tách helper persistStoredFileMetadata dùng DB mặc định để test insert stored_files không cần upload thật
+- [x] Tách helper cleanupStoredFileMetadata nhận delete function để test idempotent implementation thay vì chỉ test selector

@@ -3,6 +3,8 @@
 // Downloads return /manus-storage/{key} paths served via 307 redirect.
 
 import { ENV } from "./_core/env";
+import { getDb } from "./db";
+import { storedFiles } from "../drizzle/schema";
 
 function getForgeConfig() {
   const forgeUrl = ENV.forgeApiUrl;
@@ -21,6 +23,10 @@ function normalizeKey(relKey: string): string {
   return relKey.replace(/^\/+/, "");
 }
 
+export type StorageMetadataOptions = { ownerId?: number; referenced?: boolean; metadataSink?: (metadata: ReturnType<typeof buildStoredFileMetadata>) => Promise<void>; fetchImpl?: typeof fetch };
+export function buildStoredFileMetadata(key: string, metadata: { ownerId?: number; referenced?: boolean } = {}) { return { storageKey: key, ownerId: metadata.ownerId, referenced: metadata.referenced ? "yes" as const : "no" as const }; }
+export async function persistStoredFileMetadata(db: any, metadata: ReturnType<typeof buildStoredFileMetadata>) { return db.insert(storedFiles).values(metadata); }
+
 function appendHashSuffix(relKey: string): string {
   const hash = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
   const lastDot = relKey.lastIndexOf(".");
@@ -32,15 +38,17 @@ export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
   contentType = "application/octet-stream",
+  metadata: StorageMetadataOptions = {},
 ): Promise<{ key: string; url: string }> {
   const { forgeUrl, forgeKey } = getForgeConfig();
+  const httpFetch = metadata.fetchImpl ?? fetch;
   const key = appendHashSuffix(normalizeKey(relKey));
 
   // 1. Get presigned PUT URL from Forge
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
   presignUrl.searchParams.set("path", key);
 
-  const presignResp = await fetch(presignUrl, {
+  const presignResp = await httpFetch(presignUrl, {
     headers: { Authorization: `Bearer ${forgeKey}` },
   });
 
@@ -58,7 +66,7 @@ export async function storagePut(
       ? new Blob([data], { type: contentType })
       : new Blob([data as any], { type: contentType });
 
-  const uploadResp = await fetch(s3Url, {
+  const uploadResp = await httpFetch(s3Url, {
     method: "PUT",
     headers: { "Content-Type": contentType },
     body: blob,
@@ -68,6 +76,9 @@ export async function storagePut(
     throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
   }
 
+  const storedMetadata = buildStoredFileMetadata(key, metadata);
+  if (metadata.metadataSink) await metadata.metadataSink(storedMetadata);
+  else { const db = await getDb(); if (db) await persistStoredFileMetadata(db, storedMetadata); }
   return { key, url: `/manus-storage/${key}` };
 }
 
