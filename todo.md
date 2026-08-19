@@ -430,3 +430,10 @@
 - [x] Cập nhật VITE_APP_TITLE thành Quản Lý Doanh Nghiệp
 - [x] Cập nhật title/meta và thương hiệu hiển thị trong giao diện
 - [x] Rà soát tên cũ trong các vị trí chính và chạy validation
+
+
+## Đồng bộ tên trên sidebar và logo
+
+- [x] Cập nhật chữ thương hiệu trong sidebar thành Quản Lý Doanh Nghiệp
+- [x] Đồng bộ khu vực logo/header và văn bản thay thế
+- [x] Giữ responsive desktop/mobile và chạy validation
