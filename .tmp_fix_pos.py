@@ -1,0 +1,59 @@
+from pathlib import Path
+path = Path('/home/ubuntu/mini-erp-bia/client/src/pages/Home.tsx')
+text = path.read_text()
+start = text.index('function POSPanel(')
+end = text.index('function QCPanel(', start)
+replacement = r'''function POSPanel({ products }: { products: any[] }) {
+  const [cart, setCart] = useState<any[]>([]);
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [customerId, setCustomerId] = useState("");
+  const [lastOrderId, setLastOrderId] = useState<number | undefined>();
+  const calculation = useMemo(() => {
+    const subtotal = cart.reduce((sum, item) => sum + item.quantity * Number(item.price), 0);
+    return { subtotal, total: subtotal };
+  }, [cart]);
+  const receipt = trpc.sales.receipt.useQuery({ id: lastOrderId ?? 0 }, { enabled: Boolean(lastOrderId) });
+  const salesCreate = trpc.sales.create.useMutation();
+  const qrInput = useMemo(() => ({ bankBin: "970422", accountNumber, accountName, amount: Math.round(calculation.total), addInfo: "Thanh toan POS BreweryOS" }), [accountNumber, accountName, calculation.total]);
+  const qr = trpc.pos.vietQrUrl.useQuery(qrInput, { enabled: Boolean(accountNumber && accountName && calculation.total > 0) });
+  const add = (product: any) => setCart(current => {
+    const found = current.find(item => item.id === product.id);
+    return found ? current.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...current, { id: product.id, name: product.name, price: Number(product.price ?? product.unitPrice ?? 0), quantity: 1 }];
+  });
+  const change = (id: number, delta: number) => setCart(current => current.map(item => item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item).filter(item => item.quantity > 0));
+  const printReceipt = () => {
+    if (!receipt.data) return;
+    const popup = window.open("", "breweryos-bill", "width=420,height=720");
+    if (!popup) return;
+    const order = receipt.data.order;
+    const html = "<main style=\\"font-family:Arial;padding:24px\\"><h2>BREWERYOS</h2><h1>HÓA ĐƠN THANH TOÁN</h1><p>Mã đơn: " + (order?.orderCode ?? "-") + "</p><hr/><p>Tổng tiền: <strong>" + money(Number(order?.total ?? 0)) + "</strong></p><p>Ngày in: " + new Date(receipt.data.printedAt).toLocaleString("vi-VN") + "</p></main>";
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    popup.print();
+  };
+  const saveOrder = async () => {
+    if (!customerId) return toast.error("Vui lòng nhập mã khách hàng");
+    try {
+      const result = await salesCreate.mutateAsync({ orderCode: `POS-${Date.now()}`, customerId: Number(customerId), items: cart.map(item => ({ productId: item.id, quantity: item.quantity, unitPrice: Number(item.price) })), discount: 0 });
+      setLastOrderId(result.orderId);
+      toast.success("Đã lưu đơn POS");
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+  return <div>
+    <div className="mb-6"><p className="mb-2 text-xs font-bold uppercase tracking-[.22em] text-amber-300/70">KINH DOANH / POS</p><h2 className="flex items-center gap-3 font-display text-3xl font-bold"><ShoppingCart className="text-amber-300" size={27} />Quầy bán hàng</h2><p className="mt-2 text-sm text-slate-500">Tính tiền nhanh, tạo QR thanh toán VietQR và in bill.</p></div>
+    <div className="grid gap-5 xl:grid-cols-[1.2fr_.8fr]">
+      <div className="glass rounded-2xl p-5"><h3 className="font-semibold">Sản phẩm</h3>{products.length === 0 ? <p className="mt-8 text-sm text-slate-500">Chưa có sản phẩm bia. Hãy tạo sản phẩm trước khi mở POS.</p> : <div className="mt-4 grid gap-3 sm:grid-cols-2">{products.map(product => <button key={product.id} onClick={() => add(product)} className="rounded-xl border border-white/10 bg-white/[.03] p-4 text-left transition hover:border-amber-300/40 hover:bg-amber-300/10"><p className="font-semibold">{product.name}</p><p className="mt-1 text-xs text-slate-500">{money(Number(product.price ?? product.unitPrice ?? 0))}</p></button>)}</div>}</div>
+      <div className="glass rounded-2xl p-5"><div className="flex items-center justify-between"><h3 className="font-semibold">Giỏ hàng</h3><button onClick={() => setCart([])} className="text-xs text-slate-500 hover:text-red-300">Xóa hết</button></div><div className="mt-4 space-y-3">{cart.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">Chưa có sản phẩm</p> : cart.map(item => <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/5 p-3"><div><p className="text-sm font-medium">{item.name}</p><p className="text-xs text-slate-500">{money(item.price)}</p></div><div className="flex items-center gap-2"><button onClick={() => change(item.id, -1)} className="h-7 w-7 rounded bg-white/10">−</button><span className="w-5 text-center text-sm">{item.quantity}</span><button onClick={() => change(item.id, 1)} className="h-7 w-7 rounded bg-white/10">+</button></div></div>)}</div>
+        <div className="mt-5 space-y-2 border-t border-white/10 pt-4 text-sm"><div className="flex justify-between text-slate-400"><span>Tạm tính</span><b>{money(calculation.subtotal)}</b></div><div className="flex justify-between text-lg font-bold text-amber-300"><span>Thanh toán</span><b>{money(calculation.total)}</b></div></div>
+        <div className="mt-5 grid gap-2"><Input value={customerId} onChange={e => setCustomerId(e.target.value)} placeholder="Mã khách hàng" className="border-white/10 bg-white/5" /><Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="Số tài khoản nhận VietQR" className="border-white/10 bg-white/5" /><Input value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Tên tài khoản nhận" className="border-white/10 bg-white/5" />{qr.data && <img src={qr.data} alt="Mã VietQR thanh toán" className="mx-auto mt-2 h-44 w-44 rounded-lg bg-white p-2" />}<Button onClick={() => void saveOrder()} disabled={!cart.length || salesCreate.isPending} className="bg-amber-400 text-[#08111f] hover:bg-amber-300">{salesCreate.isPending ? "Đang lưu..." : "Lưu đơn POS"}</Button>{receipt.data && <Button onClick={printReceipt} className="border border-amber-300/30 bg-white/5 text-amber-200">In bill</Button>}</div>
+      </div>
+    </div>
+  </div>;
+}
+
+'''
+path.write_text(text[:start] + replacement + text[end:])

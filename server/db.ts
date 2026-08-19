@@ -64,3 +64,37 @@ export async function dashboardSummary() {
   ]);
   return { revenue: Number(revenue[0]?.value ?? 0), inventoryValue: Number(inventoryValue[0]?.value ?? 0), orderCount: Number(orderCount[0]?.value ?? 0), activeBatches: Number(activeBatches[0]?.value ?? 0), lowStockCount: Number(lowStockCount[0]?.value ?? 0), productionByStatus };
 }
+
+export async function getCrossSheetLinks(input: { tableName: string; recordId: number }) {
+  const db = await getDb();
+  if (!db) return { source: null, customer: [], orders: [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: [], qcResults: [] };
+  if (input.tableName === "sales_orders") {
+    const order = (await db.select().from(salesOrders).where(eq(salesOrders.id, input.recordId)).limit(1))[0];
+    return { source: order ?? null, customer: order ? await db.select().from(customers).where(eq(customers.id, order.customerId)) : [], orders: order ? [order] : [], orderItems: order ? await db.select().from(salesOrderItems).where(eq(salesOrderItems.orderId, order.id)) : [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: [], qcResults: [] };
+  }
+  if (input.tableName === "production_batches") {
+    const batch = (await db.select().from(productionBatches).where(eq(productionBatches.id, input.recordId)).limit(1))[0];
+    return { source: batch ?? null, customer: [], orders: [], batches: batch ? [batch] : [], beerTypes: batch ? await db.select().from(beerTypes).where(eq(beerTypes.id, batch.beerTypeId)) : [], recipes: batch ? await db.select().from(recipes).where(eq(recipes.beerTypeId, batch.beerTypeId)) : [], inventoryTransactions: [], qcResults: batch ? await db.select().from(qcResults).where(eq(qcResults.batchId, batch.id)) : [] };
+  }
+  if (input.tableName === "beer_types") { const beerType = (await db.select().from(beerTypes).where(eq(beerTypes.id, input.recordId)).limit(1))[0]; return { source: beerType ?? null, customer: [], orders: [], batches: beerType ? await db.select().from(productionBatches).where(eq(productionBatches.beerTypeId, beerType.id)) : [], beerTypes: beerType ? [beerType] : [], recipes: beerType ? await db.select().from(recipes).where(eq(recipes.beerTypeId, beerType.id)) : [], inventoryTransactions: [], qcResults: [] }; }
+  if (input.tableName === "customers") {
+    const customer = (await db.select().from(customers).where(eq(customers.id, input.recordId)).limit(1))[0];
+    return { source: customer ?? null, customer: customer ? [customer] : [], orders: customer ? await db.select().from(salesOrders).where(eq(salesOrders.customerId, customer.id)).orderBy(desc(salesOrders.createdAt)) : [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: [], qcResults: [] };
+  }
+  if (input.tableName === "ingredients") {
+    const ingredient = (await db.select().from(ingredients).where(eq(ingredients.id, input.recordId)).limit(1))[0];
+    return { source: ingredient ?? null, customer: [], orders: [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: ingredient ? await db.select().from(inventoryTransactions).where(eq(inventoryTransactions.ingredientId, ingredient.id)).orderBy(desc(inventoryTransactions.createdAt)) : [], qcResults: [] };
+  }
+  return { source: null, customer: [], orders: [], batches: [], beerTypes: [], recipes: [], inventoryTransactions: [], qcResults: [] };
+}
+
+export function crossSheetTargetTables(tableName: string): string[] {
+  const mapping: Record<string, string[]> = {
+    sales_orders: ["customers", "sales_orders", "sales_order_items"],
+    production_batches: ["beer_types", "recipes", "qc_results", "production_batches"],
+    beer_types: ["beer_types", "recipes", "production_batches"],
+    customers: ["customers", "sales_orders"],
+    ingredients: ["ingredients", "inventory_transactions"],
+  };
+  return mapping[tableName] ?? [];
+}

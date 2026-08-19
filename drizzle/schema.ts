@@ -88,12 +88,14 @@ export const customers = mysqlTable("customers", {
   name: varchar("name", { length: 160 }).notNull(),
   phone: varchar("phone", { length: 40 }),
   address: text("address"),
+  provinceCode: varchar("provinceCode", { length: 16 }),
+  districtCode: varchar("districtCode", { length: 16 }),
   email: varchar("email", { length: 160 }),
   notes: text("notes"),
   createdBy: int("createdBy"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-}, table => ({ ownerIdx: index("customers_created_by_idx").on(table.createdBy), phoneIdx: index("customers_phone_idx").on(table.phone) }));
+}, table => ({ ownerIdx: index("customers_created_by_idx").on(table.createdBy), phoneIdx: index("customers_phone_idx").on(table.phone), locationIdx: index("customers_location_idx").on(table.provinceCode, table.districtCode) }));
 
 export const beerProducts = mysqlTable("beer_products", {
   id: int("id").autoincrement().primaryKey(),
