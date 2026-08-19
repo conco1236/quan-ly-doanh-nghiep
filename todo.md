@@ -406,3 +406,11 @@
 - [x] Thêm giao diện tải lên/xem trước/xóa logo trong cài đặt
 - [x] Bổ sung test upload, quyền, validation và PDF logo
 - [x] Chạy full test, TypeScript, build và lưu checkpoint
+
+
+## Chỉnh sửa tên công ty và slogan
+
+- [x] Thêm API admin lưu companyName và tagline với audit oldValue/newValue
+- [x] Thêm form chỉnh sửa tên công ty và slogan trong BrandingPanel
+- [x] Hiển thị preview thương hiệu và trạng thái lưu thành công/thất bại
+- [x] Bổ sung test validation/quyền và chạy full validation

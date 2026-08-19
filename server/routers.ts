@@ -26,6 +26,8 @@ const assetInput = z.object({ assetCode: z.string().min(1).max(50), name: z.stri
 const scheduleInput = z.object({ assetId: z.number().int().positive(), title: z.string().min(1).max(180), frequencyDays: z.number().int().positive(), nextDueAt: z.coerce.date() });
 const ticketInput = z.object({ ticketCode: z.string().min(1).max(80), assetId: z.number().int().positive(), title: z.string().min(1).max(180), description: z.string().optional(), priority: z.enum(["low", "medium", "high", "critical"]).default("medium") });
 const brandingUploadInput = z.object({ fileName: z.string().min(1).max(180), mimeType: z.enum(["image/png", "image/jpeg"]), dataBase64: z.string().min(100).max(7_000_000), companyName: z.string().min(1).max(160).optional(), tagline: z.string().max(240).optional() });
+const brandingUpdateInput = z.object({ companyName: z.string().trim().min(1, "Tên công ty không được để trống").max(160), tagline: z.string().trim().min(1, "Slogan không được để trống").max(240) });
+export function normalizeBrandingCopy(input: { companyName: string; tagline: string }) { const companyName = input.companyName.trim(); const tagline = input.tagline.trim(); if (!companyName) throw new Error("Tên công ty không được để trống"); if (!tagline) throw new Error("Slogan không được để trống"); if (companyName.length > 160) throw new Error("Tên công ty không được vượt quá 160 ký tự"); if (tagline.length > 240) throw new Error("Slogan không được vượt quá 240 ký tự"); return { companyName, tagline }; }
 
 const requireAdmin = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new Error("Bạn không có quyền truy cập khu vực quản trị");
@@ -49,6 +51,13 @@ export const appRouter = router({
   system: systemRouter,
   branding: router({
     get: protectedProcedure.query(() => getSystemBranding()),
+    update: requireAdmin.input(brandingUpdateInput).mutation(async ({ input, ctx }) => {
+      const normalized = normalizeBrandingCopy(input);
+      const previous = await getSystemBranding();
+      const saved = await saveSystemBranding({ companyName: normalized.companyName, tagline: normalized.tagline, updatedBy: ctx.user.id });
+      await recordAudit({ tableName: "system_branding", recordId: 1, action: "update", actorId: ctx.user.id, oldValue: { companyName: previous.companyName, tagline: previous.tagline }, newValue: { companyName: normalized.companyName, tagline: normalized.tagline }, meta: getRequestMeta(ctx.req) });
+      return saved;
+    }),
     upload: requireAdmin.input(brandingUploadInput).mutation(async ({ input, ctx }) => {
       const raw = input.dataBase64.replace(/^data:[^;]+;base64,/, "");
       const bytes = Buffer.from(raw, "base64");
