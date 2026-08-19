@@ -19,6 +19,8 @@ export const systemBranding = mysqlTable("system_branding", {
   address: varchar("address", { length: 300 }).default("").notNull(),
   hotline: varchar("hotline", { length: 40 }).default("").notNull(),
   taxCode: varchar("taxCode", { length: 40 }).default("").notNull(),
+  email: varchar("email", { length: 320 }).default("").notNull(),
+  website: varchar("website", { length: 240 }).default("").notNull(),
   logoKey: varchar("logoKey", { length: 500 }),
   logoUrl: varchar("logoUrl", { length: 700 }),
   logoMimeType: varchar("logoMimeType", { length: 80 }),

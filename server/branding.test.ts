@@ -3,7 +3,7 @@ import { normalizeBrandingCopy } from "./routers";
 
 describe("Branding copy validation", () => {
   it("trims company name and tagline before persistence", () => {
-    expect(normalizeBrandingCopy({ companyName: "  Công ty Bia ABC  ", tagline: "  Uống có trách nhiệm  ", address: "  123 Đường Bia  ", hotline: "  1900 1234  ", taxCode: "  0123456789  " })).toEqual({ companyName: "Công ty Bia ABC", tagline: "Uống có trách nhiệm", address: "123 Đường Bia", hotline: "1900 1234", taxCode: "0123456789" });
+    expect(normalizeBrandingCopy({ companyName: "  Công ty Bia ABC  ", tagline: "  Uống có trách nhiệm  ", address: "  123 Đường Bia  ", hotline: "  1900 1234  ", taxCode: "  0123456789  " })).toEqual({ companyName: "Công ty Bia ABC", tagline: "Uống có trách nhiệm", address: "123 Đường Bia", hotline: "1900 1234", taxCode: "0123456789", email: "", website: "" });
   });
 
   it("rejects blank branding fields", () => {
@@ -12,7 +12,7 @@ describe("Branding copy validation", () => {
   });
 
   it("trims optional contact fields and defaults them to empty strings", () => {
-    expect(normalizeBrandingCopy({ companyName: "Công ty", tagline: "Slogan" })).toEqual({ companyName: "Công ty", tagline: "Slogan", address: "", hotline: "", taxCode: "" });
+    expect(normalizeBrandingCopy({ companyName: "Công ty", tagline: "Slogan" })).toEqual({ companyName: "Công ty", tagline: "Slogan", address: "", hotline: "", taxCode: "", email: "", website: "" });
   });
 
   it("rejects values exceeding database limits", () => {

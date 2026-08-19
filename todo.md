@@ -453,3 +453,11 @@
 - [x] Mở rộng API và form cấu hình thương hiệu cho thông tin liên hệ
 - [x] Hiển thị thông tin liên hệ trong hóa đơn POS và QR thanh toán nếu phù hợp
 - [x] Bổ sung test validation/hóa đơn và chạy full validation
+
+
+## Email và website trên hóa đơn POS
+
+- [x] Thêm email và website vào metadata branding
+- [x] Mở rộng API, validation và form cấu hình thương hiệu
+- [x] Hiển thị email và website trên hóa đơn POS
+- [x] Bổ sung test và chạy full validation

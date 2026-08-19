@@ -10,6 +10,8 @@ describe("application title configuration", () => {
     const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
     expect(home).toContain("Quản Lý Doanh Nghiệp");
     expect(home).toContain("HÓA ĐƠN THANH TOÁN");
+    expect(home).toContain("Email: ${email}");
+    expect(home).toContain("Website: ${website}");
     expect(home).toContain("Thanh toan ${branding.data?.companyName");
     expect(home).not.toContain("breweryos-bill");
     expect(home).not.toContain("Thanh toan POS BreweryOS");

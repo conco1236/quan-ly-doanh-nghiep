@@ -14,16 +14,16 @@ export async function getDb() {
 
 export async function getSystemBranding() {
   const db = await getDb();
-  if (!db) return { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+  if (!db) return { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
   const [row] = await db.select().from(systemBranding).limit(1);
-  return row ?? { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+  return row ?? { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
 }
 
-export async function saveSystemBranding(input: { companyName?: string; tagline?: string; address?: string; hotline?: string; taxCode?: string; logoKey?: string | null; logoUrl?: string | null; logoMimeType?: string | null; logoSize?: number | null; updatedBy: number }) {
+export async function saveSystemBranding(input: { companyName?: string; tagline?: string; address?: string; hotline?: string; taxCode?: string; email?: string; website?: string; logoKey?: string | null; logoUrl?: string | null; logoMimeType?: string | null; logoSize?: number | null; updatedBy: number }) {
   const db = await getDb(); if (!db) throw new Error("Database unavailable");
   const current = await getSystemBranding();
-  const values = { id: 1, companyName: input.companyName ?? current.companyName, tagline: input.tagline ?? current.tagline, address: input.address ?? current.address, hotline: input.hotline ?? current.hotline, taxCode: input.taxCode ?? current.taxCode, logoKey: input.logoKey === undefined ? current.logoKey : input.logoKey, logoUrl: input.logoUrl === undefined ? current.logoUrl : input.logoUrl, logoMimeType: input.logoMimeType === undefined ? current.logoMimeType : input.logoMimeType, logoSize: input.logoSize === undefined ? current.logoSize : input.logoSize, updatedBy: input.updatedBy };
-  await db.insert(systemBranding).values(values).onDuplicateKeyUpdate({ set: { companyName: values.companyName, tagline: values.tagline, address: values.address, hotline: values.hotline, taxCode: values.taxCode, logoKey: values.logoKey, logoUrl: values.logoUrl, logoMimeType: values.logoMimeType, logoSize: values.logoSize, updatedBy: values.updatedBy } });
+  const values = { id: 1, companyName: input.companyName ?? current.companyName, tagline: input.tagline ?? current.tagline, address: input.address ?? current.address, hotline: input.hotline ?? current.hotline, taxCode: input.taxCode ?? current.taxCode, email: input.email ?? current.email, website: input.website ?? current.website, logoKey: input.logoKey === undefined ? current.logoKey : input.logoKey, logoUrl: input.logoUrl === undefined ? current.logoUrl : input.logoUrl, logoMimeType: input.logoMimeType === undefined ? current.logoMimeType : input.logoMimeType, logoSize: input.logoSize === undefined ? current.logoSize : input.logoSize, updatedBy: input.updatedBy };
+  await db.insert(systemBranding).values(values).onDuplicateKeyUpdate({ set: { companyName: values.companyName, tagline: values.tagline, address: values.address, hotline: values.hotline, taxCode: values.taxCode, email: values.email, website: values.website, logoKey: values.logoKey, logoUrl: values.logoUrl, logoMimeType: values.logoMimeType, logoSize: values.logoSize, updatedBy: values.updatedBy } });
   return getSystemBranding();
 }
 
