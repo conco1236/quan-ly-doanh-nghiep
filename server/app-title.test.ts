@@ -8,8 +8,9 @@ describe("application title configuration", () => {
     expect(html).toContain("<title>Quản Lý Doanh Nghiệp</title>");
     expect(html).toContain('name="description" content="Quản Lý Doanh Nghiệp - Hệ thống quản trị doanh nghiệp"');
     const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
-    expect(home).toContain("QUẢN LÝ DOANH NGHIỆP</h2>");
-    expect(home).toContain("Thanh toan Quản Lý Doanh Nghiệp");
+    expect(home).toContain("Quản Lý Doanh Nghiệp");
+    expect(home).toContain("HÓA ĐƠN THANH TOÁN");
+    expect(home).toContain("Thanh toan ${branding.data?.companyName");
     expect(home).not.toContain("breweryos-bill");
     expect(home).not.toContain("Thanh toan POS BreweryOS");
   });

@@ -445,3 +445,11 @@
 - [x] Hiển thị Quản Lý Doanh Nghiệp trong tiêu đề và chân hóa đơn
 - [x] Cập nhật nội dung chuyển khoản/thanh toán liên quan nếu còn tên cũ
 - [x] Bổ sung test hóa đơn và chạy full validation
+
+
+## Thông tin liên hệ trên hóa đơn POS
+
+- [x] Thêm địa chỉ, hotline và mã số thuế vào metadata branding
+- [x] Mở rộng API và form cấu hình thương hiệu cho thông tin liên hệ
+- [x] Hiển thị thông tin liên hệ trong hóa đơn POS và QR thanh toán nếu phù hợp
+- [x] Bổ sung test validation/hóa đơn và chạy full validation
