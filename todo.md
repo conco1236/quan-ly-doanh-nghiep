@@ -414,3 +414,12 @@
 - [x] Thêm form chỉnh sửa tên công ty và slogan trong BrandingPanel
 - [x] Hiển thị preview thương hiệu và trạng thái lưu thành công/thất bại
 - [x] Bổ sung test validation/quyền và chạy full validation
+
+
+## Xem trước PDF trong quản lý thương hiệu
+
+- [x] Tạo helper sinh Blob URL PDF preview từ branding và dữ liệu mẫu POS/HR
+- [x] Thêm tab chọn báo cáo POS/HR và iframe xem trước trong BrandingPanel
+- [x] Đồng bộ logo, tên công ty, slogan và người phê duyệt vào preview
+- [x] Thêm xử lý loading/lỗi và thu hồi Blob URL khi thay đổi
+- [x] Bổ sung test helper preview và chạy full validation

@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, departmentsForPreset, filterByDepartments, normalizePdfText } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, createPdfReportBlob, departmentsForPreset, filterByDepartments, normalizePdfText } from "./export";
+
+describe("PDF preview helpers", () => {
+  it("creates a non-empty PDF Blob using approval branding", () => {
+    const blob = createPdfReportBlob("Báo cáo xem trước", ["Chỉ tiêu", "Giá trị"], [["Doanh thu", 1200000]], ["BẢN XEM TRƯỚC"], { companyName: "Công ty Bia ABC", companyTagline: "Uống có trách nhiệm", approverName: "Admin" });
+    expect(blob.type).toBe("application/pdf");
+    expect(blob.size).toBeGreaterThan(100);
+  });
+
+  it("normalizes Vietnamese text for the default PDF font", () => {
+    expect(normalizePdfText("Công ty Bia Đà Nẵng")).toBe("Cong ty Bia Da Nang");
+  });
+});
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {

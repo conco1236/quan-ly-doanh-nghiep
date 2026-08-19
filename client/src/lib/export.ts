@@ -181,7 +181,7 @@ function drawBreweryLogo(doc: jsPDF, x: number, y: number, logoDataUrl?: string,
 export async function loadImageAsDataUrl(url?: string | null) { if (!url) return undefined; try { const response = await fetch(url); if (!response.ok) return undefined; const blob = await response.blob(); return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob); }); } catch { return undefined; }
 }
 
-export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
+export function createPdfReportBlob(title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const companyName = approval.companyName ?? "BREWERYOS";
   doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11, approval.logoDataUrl, approval.logoMimeType);
@@ -190,13 +190,18 @@ export function downloadPdfReport(filename: string, title: string, headers: stri
   let y = 82;
   for (const line of summary ?? []) { doc.text(normalizePdfText(line), 32, y); y += 15; }
   y += 8;
-  const columnWidth = 778 / headers.length; const rowHeight = 20;
+  const columnWidth = 778 / Math.max(headers.length, 1); const rowHeight = 20;
   doc.setFillColor(214, 167, 45); doc.rect(32, y, 778, rowHeight, "F");
   doc.setTextColor(16, 42, 67); doc.setFontSize(8);
   headers.forEach((header, index) => doc.text(normalizePdfText(header), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 }));
   y += rowHeight;
   rows.slice(0, 28).forEach((row, rowIndex) => { if (rowIndex % 2 === 0) { doc.setFillColor(245, 248, 250); doc.rect(32, y, 778, rowHeight, "F"); } doc.setTextColor(36, 59, 83); row.forEach((value, index) => doc.text(normalizePdfText(value), 36 + index * columnWidth, y + 13, { maxWidth: columnWidth - 8 })); y += rowHeight; });
   if (y > 475) { doc.addPage(); y = 76; }
-  const signatureY = Math.max(y + 35, 360); doc.setTextColor(36, 59, 83); doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("NGUOI PHE DUYET", 640, signatureY, { align: "center" }); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.approverTitle ?? "Quan ly / Ke toan truong"), 640, signatureY + 14, { align: "center" }); doc.setDrawColor(159, 179, 200); doc.line(570, signatureY + 72, 710, signatureY + 72); doc.setFontSize(9); doc.text(normalizePdfText(approval.approverName ?? "Chua xac dinh"), 640, signatureY + 88, { align: "center" }); doc.setFontSize(8); doc.setTextColor(98, 125, 152); doc.text(`BreweryOS · Xuat luc ${new Date().toLocaleString("vi-VN")}`, 32, 570);
-  doc.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+  const signatureY = Math.max(y + 35, 360); doc.setTextColor(36, 59, 83); doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text("NGUOI PHE DUYET", 640, signatureY, { align: "center" }); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.approverTitle ?? "Quan ly / Ke toan truong"), 640, signatureY + 14, { align: "center" }); doc.setDrawColor(159, 179, 200); doc.line(570, signatureY + 72, 710, signatureY + 72); doc.setFontSize(9); doc.text(normalizePdfText(approval.approverName ?? "Chua xac dinh"), 640, signatureY + 88, { align: "center" }); doc.setFontSize(8); doc.setTextColor(98, 125, 152); doc.text(`${normalizePdfText(companyName)} · Xuat luc ${new Date().toLocaleString("vi-VN")}`, 32, 570);
+  return doc.output("blob");
+}
+
+export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
+  const blob = createPdfReportBlob(title, headers, rows, summary, approval);
+  const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = filename.endsWith(".pdf") ? filename : `${filename}.pdf`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
