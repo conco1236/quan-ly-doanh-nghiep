@@ -245,3 +245,12 @@
 - [x] Thêm validation, loading/empty/error states và responsive
 - [x] Viết unit/integration tests cho ngày công, trùng bản ghi và quy trình duyệt nghỉ
 - [x] Kiểm tra TypeScript, Vitest, build và screenshot trước checkpoint
+
+## Xuất báo cáo Chấm công và Ngày phép
+
+- [x] Thiết kế cột và bộ lọc dữ liệu xuất cho bảng chấm công/lịch sử nghỉ phép
+- [x] Thêm helper tạo CSV có BOM tiếng Việt và workbook Excel-compatible
+- [x] Tích hợp nút xuất CSV/XLS theo tab Chấm công/Ngày phép
+- [x] Bổ sung trạng thái rỗng, thông báo lỗi và tên file theo thời gian xuất
+- [x] Viết test cho mapping cột, escape CSV và dữ liệu ngày phép
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
