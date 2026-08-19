@@ -50,6 +50,10 @@ export function buildEmployeeMonthlySummary(attendance: AttendanceSummaryInput[]
 
 const headerStyle = { font: { bold: true, color: { rgb: "FFFFFF" }, name: "Aptos" }, fill: { fgColor: { rgb: "102A43" } }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: { bottom: { style: "thin", color: { rgb: "D6A72D" } } } };
 const bodyStyle = { font: { name: "Aptos", color: { rgb: "243B53" } }, alignment: { vertical: "center" } };
+const totalStyle = { font: { bold: true, color: { rgb: "102A43" }, name: "Aptos" }, fill: { fgColor: { rgb: "FFF4CC" } }, alignment: { vertical: "center" }, border: { top: { style: "thin", color: { rgb: "D6A72D" } } } };
+const isSummableHeader = (header: string) => /ngày công|số ngày|tổng ngày|có mặt|đi muộn|vắng|ngày lễ|nghỉ phép|phép năm|ốm|không lương|khác|đơn chờ|số giờ/i.test(header);
+const isCountableHeader = (header: string) => /^ngày$/i.test(header);
+function totalRowFor(sheet: ExcelSheet) { return sheet.headers.map((header, index) => index === 0 ? "Tổng cộng" : isSummableHeader(header) || isCountableHeader(header) ? null : ""); }
 
 function cellDisplayValue(value: ExportCell) { return String(value ?? ""); }
 function columnWidth(header: string, values: ExportCell[]) { const maxLength = Math.max(header.length, ...values.map(value => cellDisplayValue(value).length)); return Math.min(32, Math.max(10, maxLength + 2)); }
@@ -64,7 +68,7 @@ function applySheetFormatting(worksheet: any, sheet: ExcelSheet) {
     for (let row = 2; row <= totalRows; row += 1) {
       const address = `${XLSX.utils.encode_col(column)}${row}`;
       if (!worksheet[address]) continue;
-      worksheet[address].s = { ...bodyStyle, alignment: { ...bodyStyle.alignment, horizontal: typeof worksheet[address].v === "number" ? "right" : "left" } };
+      worksheet[address].s = row === totalRows ? totalStyle : { ...bodyStyle, alignment: { ...bodyStyle.alignment, horizontal: typeof worksheet[address].v === "number" ? "right" : "left" } };
       if (/ngày|tháng/i.test(header)) worksheet[address].z = "dd/mm/yyyy";
       if (/số ngày|tổng ngày|có mặt|đi muộn|vắng|ngày lễ|nghỉ phép|đơn chờ|giờ/i.test(header) && typeof worksheet[address].v === "number") worksheet[address].z = Number.isInteger(worksheet[address].v) ? "0" : "0.00";
     }
@@ -78,8 +82,20 @@ function applySheetFormatting(worksheet: any, sheet: ExcelSheet) {
 export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
   const workbook = XLSX.utils.book_new();
   for (const sheet of sheets) {
-    const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows]);
-    applySheetFormatting(worksheet, sheet);
+    const total = totalRowFor(sheet);
+    const rowsWithTotal = [...sheet.rows, total];
+    const formattedSheet = { ...sheet, rows: rowsWithTotal };
+    const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...rowsWithTotal]);
+    applySheetFormatting(worksheet, formattedSheet);
+    const totalRowNumber = rowsWithTotal.length + 1;
+    sheet.headers.forEach((header, column) => {
+      if (!isSummableHeader(header) && !isCountableHeader(header)) return;
+      const address = `${XLSX.utils.encode_col(column)}${totalRowNumber}`;
+      const firstDataRow = 2;
+      const lastDataRow = totalRowNumber - 1;
+      const range = `${XLSX.utils.encode_col(column)}${firstDataRow}:${XLSX.utils.encode_col(column)}${lastDataRow}`;
+      worksheet[address] = { t: "n", v: 0, f: lastDataRow >= firstDataRow ? `${isCountableHeader(header) ? "COUNTA" : "SUM"}(${range})` : "0", s: totalStyle, z: isSummableHeader(header) ? "0.00" : "0" };
+    });
     XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name.slice(0, 31));
   }
   return workbook;

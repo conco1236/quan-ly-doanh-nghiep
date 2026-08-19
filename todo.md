@@ -278,3 +278,11 @@
 - [x] Định dạng ngày, số ngày và số giờ theo kiểu Excel phù hợp
 - [x] Bổ sung test kiểm tra style, width, freeze pane và number format
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Dòng Tổng cộng trong XLSX
+
+- [x] Thêm dòng Tổng cộng cuối sheet Chấm công và Ngày phép
+- [x] Thêm dòng Tổng cộng cuối sheet Tổng hợp nhân viên-tháng
+- [x] Dùng công thức SUM/COUNTA native cho các cột số và định dạng nổi bật dòng tổng
+- [x] Bổ sung test công thức, số dòng và style dòng Tổng cộng
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint

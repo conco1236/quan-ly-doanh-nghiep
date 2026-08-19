@@ -24,6 +24,10 @@ describe("native XLSX workbook", () => {
     expect(workbook.Sheets["Cham cong"]["!cols"][0].wch).toBeGreaterThan(10);
     expect(workbook.Sheets["Cham cong"]["!freeze"].ySplit).toBe(1);
     expect(workbook.Sheets["Nghi phep"]["B2"].z).toBe("0");
+    expect(workbook.Sheets["Cham cong"]["A3"].v).toBe("Tổng cộng");
+    expect(workbook.Sheets["Cham cong"]["B3"].f).toBe("COUNTA(B2:B2)");
+    expect(workbook.Sheets["Cham cong"]["A3"].s.font.bold).toBe(true);
+    expect(workbook.Sheets["Nghi phep"]["A3"].v).toBe("Tổng cộng");
   });
 });
 
