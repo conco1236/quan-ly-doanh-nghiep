@@ -486,3 +486,12 @@
 - [x] Khóa mọi thao tác đọc/ghi branding không phù hợp với vai trò
 - [x] Hiển thị trạng thái quyền và màn hình từ chối truy cập cho Nhân viên
 - [x] Bổ sung test Admin/Nhân viên và chạy full validation
+
+
+## Quản lý người dùng và vai trò
+
+- [x] Rà soát bảng users và API quản trị hiện có
+- [x] Thêm API danh sách người dùng, tìm kiếm và cập nhật role
+- [x] Bảo vệ API chỉ cho Admin và ghi audit thay đổi role
+- [x] Xây dựng giao diện quản lý người dùng với role selector và trạng thái
+- [x] Bổ sung test RBAC, cập nhật role và chạy full validation

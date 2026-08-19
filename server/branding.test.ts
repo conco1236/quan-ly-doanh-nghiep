@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { canManageBranding, normalizeBrandingCopy } from "./routers";
+import { canChangeUserRole, canManageBranding, normalizeBrandingCopy } from "./routers";
 
 describe("Branding access policy", () => {
   it("allows Admin and rejects Nhân viên for branding management", () => {
     expect(canManageBranding("admin")).toBe(true);
     expect(canManageBranding("user")).toBe(false);
+  });
+});
+
+describe("User role change policy", () => {
+  it("allows assigning a role to another user", () => {
+    expect(canChangeUserRole({ actorId: 1, targetId: 2, nextRole: "admin", currentRole: "user", adminCount: 1 })).toBe(true);
+    expect(canChangeUserRole({ actorId: 1, targetId: 2, nextRole: "user", currentRole: "admin", adminCount: 2 })).toBe(true);
+  });
+
+  it("prevents self-demotion and removing the last Admin", () => {
+    expect(canChangeUserRole({ actorId: 1, targetId: 1, nextRole: "user", currentRole: "admin", adminCount: 2 })).toBe(false);
+    expect(canChangeUserRole({ actorId: 1, targetId: 2, nextRole: "user", currentRole: "admin", adminCount: 1 })).toBe(false);
   });
 });
 
