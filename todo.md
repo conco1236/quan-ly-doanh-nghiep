@@ -461,3 +461,11 @@
 - [x] Mở rộng API, validation và form cấu hình thương hiệu
 - [x] Hiển thị email và website trên hóa đơn POS
 - [x] Bổ sung test và chạy full validation
+
+
+## Đồng bộ GitHub
+
+- [ ] Kiểm tra trạng thái Git và repository hiện tại
+- [ ] Tạo repository GitHub riêng tư cho dự án
+- [ ] Commit và push mã nguồn lên GitHub
+- [ ] Xác minh remote và đường dẫn repository
