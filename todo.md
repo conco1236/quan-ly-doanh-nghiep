@@ -333,8 +333,8 @@
 - [ ] Thiết kế mô hình dữ liệu liên module và ma trận quyền nghiệp vụ
 - [ ] Triển khai Thu–Chi, Công nợ và đối soát POS
 - [x] Triển khai Mua hàng và quản lý Nhà cung cấp
-- [ ] Triển khai Định mức, Giá vốn và hiệu quả sản xuất
-- [ ] Triển khai Bảo trì thiết bị và lịch sử sự cố
+- [x] Triển khai Định mức, Giá vốn và hiệu quả sản xuất
+- [x] Triển khai Bảo trì thiết bị và lịch sử sự cố
 - [ ] Nâng cấp Chấm công, bảng công tháng và phê duyệt
 - [ ] Mở rộng Workflow, thông báo và Dashboard điều hành
 - [ ] Hoàn thiện backup, giám sát, hiệu năng và kiểm thử tích hợp
@@ -355,3 +355,19 @@
 - [x] Tích hợp nhận hàng vào tồn kho và audit số lượng
 - [x] Thay khung mở rộng bằng giao diện Mua hàng/Nhà cung cấp
 - [x] Bổ sung test validation, quyền và tổng hợp đơn mua
+
+### Định mức và Giá vốn
+
+- [x] Tạo helper tính giá vốn công thức từ định mức nguyên liệu và đơn giá nhập gần nhất
+- [x] Tạo báo cáo giá vốn theo lô sản xuất và sản lượng thực tế
+- [x] Thêm API reports.costing và KPI biên lợi nhuận cơ bản
+- [x] Hiển thị khu vực Giá vốn trong báo cáo điều hành
+- [x] Bổ sung test tính giá vốn, hao hụt và dữ liệu thiếu đơn giá
+
+### Bảo trì thiết bị
+
+- [x] Tạo bảng thiết bị, lịch bảo dưỡng và phiếu sự cố
+- [x] Thêm API tRPC tạo/cập nhật trạng thái/lịch sử chi phí bảo trì
+- [x] Tích hợp cảnh báo thiết bị quá hạn bảo dưỡng
+- [x] Thay khung mở rộng bằng giao diện Bảo trì
+- [x] Bổ sung test lịch hạn, trạng thái và quyền sở hữu

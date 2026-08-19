@@ -260,6 +260,48 @@ export const qcResults = mysqlTable("qc_results", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, table => ({ batchIdx: index("qc_results_batch_idx").on(table.batchId), statusIdx: index("qc_results_status_idx").on(table.status) }));
 
+export const maintenanceAssets = mysqlTable("maintenance_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  assetCode: varchar("assetCode", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 180 }).notNull(),
+  category: varchar("category", { length: 100 }),
+  location: varchar("location", { length: 160 }),
+  status: mysqlEnum("status", ["active", "maintenance", "inactive"]).default("active").notNull(),
+  installedAt: timestamp("installedAt"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ ownerIdx: index("maintenance_assets_created_by_idx").on(table.createdBy), statusIdx: index("maintenance_assets_status_idx").on(table.status) }));
+
+export const maintenanceSchedules = mysqlTable("maintenance_schedules", {
+  id: int("id").autoincrement().primaryKey(),
+  assetId: int("assetId").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  frequencyDays: int("frequencyDays").notNull(),
+  nextDueAt: timestamp("nextDueAt").notNull(),
+  lastCompletedAt: timestamp("lastCompletedAt"),
+  status: mysqlEnum("status", ["active", "paused"]).default("active").notNull(),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ assetIdx: index("maintenance_schedules_asset_idx").on(table.assetId), dueIdx: index("maintenance_schedules_due_idx").on(table.nextDueAt), ownerIdx: index("maintenance_schedules_created_by_idx").on(table.createdBy) }));
+
+export const maintenanceTickets = mysqlTable("maintenance_tickets", {
+  id: int("id").autoincrement().primaryKey(),
+  ticketCode: varchar("ticketCode", { length: 80 }).notNull().unique(),
+  assetId: int("assetId").notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  description: text("description"),
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium").notNull(),
+  status: mysqlEnum("status", ["open", "in_progress", "resolved", "cancelled"]).default("open").notNull(),
+  cost: decimal("cost", { precision: 16, scale: 2 }).default("0").notNull(),
+  openedAt: timestamp("openedAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ assetIdx: index("maintenance_tickets_asset_idx").on(table.assetId), statusIdx: index("maintenance_tickets_status_idx").on(table.status), priorityIdx: index("maintenance_tickets_priority_idx").on(table.priority), ownerIdx: index("maintenance_tickets_created_by_idx").on(table.createdBy) }));
+
 export const suppliers = mysqlTable("suppliers", {
   id: int("id").autoincrement().primaryKey(),
   supplierCode: varchar("supplierCode", { length: 40 }).notNull().unique(),
@@ -370,6 +412,9 @@ export type Customer = typeof customers.$inferSelect;
 export type SalesOrder = typeof salesOrders.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type WorkflowTask = typeof workflowTasks.$inferSelect;
+export type MaintenanceAsset = typeof maintenanceAssets.$inferSelect;
+export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
+export type MaintenanceTicket = typeof maintenanceTickets.$inferSelect;
 export type Supplier = typeof suppliers.$inferSelect;
 export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
 export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;

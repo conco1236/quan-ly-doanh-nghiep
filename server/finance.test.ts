@@ -19,3 +19,15 @@ describe("finance summaries", () => {
     ])).toBe(750000);
   });
 });
+
+
+describe("costing summaries", () => {
+  it("tính chi phí định mức theo đơn giá nhập và bỏ qua nguyên liệu thiếu giá", async () => {
+    const { calculateRecipeCost } = await import("./db");
+    expect(calculateRecipeCost([
+      { beerTypeId: 1, ingredientId: 10, quantity: 2 },
+      { beerTypeId: 1, ingredientId: 11, quantity: "1.5" },
+      { beerTypeId: 1, ingredientId: 12, quantity: 4 },
+    ], new Map([[10, 120000], [11, 80000]]) )).toBe(360000);
+  });
+});
