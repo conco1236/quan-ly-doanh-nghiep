@@ -294,3 +294,11 @@
 - [x] Dùng công thức SUM native cho subtotal và vẫn giữ Tổng cộng cuối sheet
 - [x] Bổ sung test nhóm phòng ban, subtotal và trường hợp không có phòng ban
 - [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
+
+## Biểu đồ XLSX theo Phòng ban
+
+- [x] Tạo dữ liệu tỷ lệ ngày công và ngày nghỉ phép theo phòng ban
+- [x] Tạo sheet dữ liệu biểu đồ và chèn biểu đồ thanh bằng công thức native vào workbook
+- [x] Tích hợp sheet biểu đồ vào nút xuất XLSX HR
+- [x] Bổ sung test dữ liệu biểu đồ, series và sheet khi dữ liệu rỗng
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint

@@ -31,12 +31,19 @@ export function downloadExcel(filename: string, sheetName: string, headers: stri
   downloadBlob(`\uFEFF${html}`, filename.endsWith(".xls") ? filename : `${filename}.xls`, "application/vnd.ms-excel;charset=utf-8");
 }
 
-export type ExcelSheet = { name: string; headers: string[]; rows: ExportCell[][]; groupByColumn?: number };
+export type ExcelSheet = { name: string; headers: string[]; rows: ExportCell[][]; groupByColumn?: number; visualBarColumns?: { sourceColumn: number; targetColumn: number; divisor: number; color: string }[] };
 export type AttendanceSummaryInput = { employeeId: number; workDate: Date | string; status: string };
 export type LeaveSummaryInput = { employeeId: number; startDate: Date | string; totalDays: number | string; leaveType: string; status: string };
 export type EmployeeSummaryPerson = { id: number; employeeCode?: string | null; fullName?: string | null; department?: string | null };
 
 export const employeeMonthlySummaryHeaders = ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công", "Có mặt", "Đi muộn", "Vắng", "Ngày lễ", "Nghỉ phép theo công", "Ngày nghỉ được duyệt", "Phép năm đã duyệt", "Ốm đã duyệt", "Không lương đã duyệt", "Khác đã duyệt", "Đơn chờ duyệt"];
+export const departmentChartHeaders = ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"];
+
+export function buildDepartmentChartRows(summaryRows: ExportCell[][]): ExportCell[][] {
+  const groups = new Map<string, { work: number; leave: number }>();
+  for (const row of summaryRows) { const department = String(row[2] ?? "Chưa phân phòng ban"); const group = groups.get(department) ?? { work: 0, leave: 0 }; group.work += Number(row[4]) || 0; group.leave += Number(row[10]) || 0; groups.set(department, group); }
+  return Array.from(groups.entries()).sort(([a], [b]) => a.localeCompare(b, "vi")).map(([department, values]) => { const total = values.work + values.leave; const workRate = total ? Number(((values.work / total) * 100).toFixed(2)) : 0; const leaveRate = total ? Number(((values.leave / total) * 100).toFixed(2)) : 0; return [department, values.work, values.leave, workRate, leaveRate, "", ""]; });
+}
 
 function summaryMonth(value: Date | string) { const date = value instanceof Date ? value : new Date(value); return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`; }
 
@@ -115,6 +122,7 @@ export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
       const totalFormula = subtotalRows.length ? `SUM(${subtotalRows.map(subtotal => `${XLSX.utils.encode_col(column)}${subtotal.row}`).join(",")})` : lastDataRow >= firstDataRow ? `${isCountableHeader(header) ? "COUNTA" : "SUM"}(${range})` : "0";
       worksheet[address] = { t: "n", v: 0, f: totalFormula, s: totalStyle, z: isSummableHeader(header) ? "0.00" : "0" };
     });
+    if (sheet.visualBarColumns) for (const bar of sheet.visualBarColumns) { for (let row = 2; row <= rowsWithTotal.length; row += 1) { const sourceAddress = `${XLSX.utils.encode_col(bar.sourceColumn)}${row}`; const targetAddress = `${XLSX.utils.encode_col(bar.targetColumn)}${row}`; const sourceValue = Number(worksheet[sourceAddress]?.v) || 0; worksheet[targetAddress] = { t: "s", v: "█".repeat(Math.max(0, Math.round(sourceValue / bar.divisor))), f: `REPT("█",ROUND(${sourceAddress}/${bar.divisor},0))`, s: { font: { color: { rgb: bar.color }, name: "Aptos" }, alignment: { horizontal: "left" } } }; } }
     XLSX.utils.book_append_sheet(workbook, worksheet, sheet.name.slice(0, 31));
   }
   return workbook;

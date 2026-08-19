@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildXlsxWorkbook, buildEmployeeMonthlySummary } from "./export";
+import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildXlsxWorkbook, buildEmployeeMonthlySummary } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -61,6 +61,18 @@ describe("employee monthly summary", () => {
     expect(sheet["A6"].v).toBe("Tổng cộng");
     expect(sheet["E6"].f).toBe("SUM(E3,E5)");
     expect(sheet["A3"].s.font.bold).toBe(true);
+  });
+
+  it("builds department ratios and visual bars", () => {
+    const rows = buildDepartmentChartRows([
+      ["A", "E1", "Kho", "2026-08", 8, 8, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
+      ["B", "E2", "Kho", "2026-08", 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
+    expect(rows[0].slice(0, 5)).toEqual(["Kho", 10, 2, 83.33, 16.67]);
+    const workbook = buildXlsxWorkbook([{ name: "Bieu do", headers: ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"], rows, visualBarColumns: [{ sourceColumn: 3, targetColumn: 5, divisor: 5, color: "D6A72D" }, { sourceColumn: 4, targetColumn: 6, divisor: 5, color: "18B6C9" }] }]);
+    expect(workbook.Sheets["Bieu do"]["A2"].v).toBe("Kho");
+    expect(workbook.Sheets["Bieu do"]["F2"].v).toContain("█");
+    expect(workbook.Sheets["Bieu do"]["F2"].f).toContain("REPT");
   });
 
   it("returns no rows for empty datasets", () => {
