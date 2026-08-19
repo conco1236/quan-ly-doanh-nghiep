@@ -423,3 +423,10 @@
 - [x] Đồng bộ logo, tên công ty, slogan và người phê duyệt vào preview
 - [x] Thêm xử lý loading/lỗi và thu hồi Blob URL khi thay đổi
 - [x] Bổ sung test helper preview và chạy full validation
+
+
+## Đổi tên ứng dụng
+
+- [x] Cập nhật VITE_APP_TITLE thành Quản Lý Doanh Nghiệp
+- [x] Cập nhật title/meta và thương hiệu hiển thị trong giao diện
+- [x] Rà soát tên cũ trong các vị trí chính và chạy validation
