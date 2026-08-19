@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { canChangeUserRole, canManageBranding, normalizeBrandingCopy } from "./routers";
+import { canChangeAccountStatus, canChangeUserRole, canManageBranding, normalizeBrandingCopy } from "./routers";
+import { isAccountLocked } from "./_core/sdk";
 
 describe("Branding access policy", () => {
   it("allows Admin and rejects Nhân viên for branding management", () => {
@@ -17,6 +18,23 @@ describe("User role change policy", () => {
   it("prevents self-demotion and removing the last Admin", () => {
     expect(canChangeUserRole({ actorId: 1, targetId: 1, nextRole: "user", currentRole: "admin", adminCount: 2 })).toBe(false);
     expect(canChangeUserRole({ actorId: 1, targetId: 2, nextRole: "user", currentRole: "admin", adminCount: 1 })).toBe(false);
+  });
+});
+
+describe("Account locking policy", () => {
+  it("allows locking a different employee and unlocking any account", () => {
+    expect(canChangeAccountStatus({ actorId: 1, targetId: 2, nextStatus: "locked", targetRole: "user", activeAdminCount: 1 })).toBe(true);
+    expect(canChangeAccountStatus({ actorId: 1, targetId: 2, nextStatus: "active", targetRole: "admin", activeAdminCount: 1 })).toBe(true);
+  });
+
+  it("prevents self-lock and locking the last active Admin", () => {
+    expect(canChangeAccountStatus({ actorId: 1, targetId: 1, nextStatus: "locked", targetRole: "admin", activeAdminCount: 1 })).toBe(false);
+    expect(canChangeAccountStatus({ actorId: 1, targetId: 2, nextStatus: "locked", targetRole: "admin", activeAdminCount: 1 })).toBe(false);
+  });
+
+  it("marks locked accounts as inaccessible to protected authentication", () => {
+    expect(isAccountLocked({ accountStatus: "locked" })).toBe(true);
+    expect(isAccountLocked({ accountStatus: "active" })).toBe(false);
   });
 });
 

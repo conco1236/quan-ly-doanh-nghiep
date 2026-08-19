@@ -495,3 +495,12 @@
 - [x] Bảo vệ API chỉ cho Admin và ghi audit thay đổi role
 - [x] Xây dựng giao diện quản lý người dùng với role selector và trạng thái
 - [x] Bổ sung test RBAC, cập nhật role và chạy full validation
+
+
+## Khóa và mở khóa tài khoản
+
+- [x] Thêm trạng thái account active/locked vào bảng users
+- [x] Chặn đăng nhập và phiên bị khóa ở server
+- [x] Thêm API Admin khóa/mở khóa, audit và bảo vệ Admin cuối cùng
+- [x] Hiển thị thao tác và trạng thái tài khoản trong AdminUsersPanel
+- [x] Bổ sung test auth/RBAC và chạy full validation

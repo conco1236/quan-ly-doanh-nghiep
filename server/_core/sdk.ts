@@ -24,6 +24,10 @@ export type SessionPayload = {
   name: string;
 };
 
+export function isAccountLocked(user: Pick<User, "accountStatus">) {
+  return user.accountStatus === "locked";
+}
+
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
@@ -309,6 +313,10 @@ class SDKServer {
 
     if (!user) {
       throw ForbiddenError("User not found");
+    }
+
+    if (isAccountLocked(user)) {
+      throw ForbiddenError("Tài khoản đã bị khóa. Vui lòng liên hệ Admin để được mở lại.");
     }
 
     await db.upsertUser({
