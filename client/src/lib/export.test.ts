@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeCsvCell, toCsv, buildXlsxWorkbook } from "./export";
+import { escapeCsvCell, toCsv, buildXlsxWorkbook, buildEmployeeMonthlySummary } from "./export";
 
 describe("report export helpers", () => {
   it("escapes commas, quotes and line breaks in CSV cells", () => {
@@ -20,5 +20,30 @@ describe("native XLSX workbook", () => {
     expect(workbook.SheetNames).toEqual(["Cham cong", "Nghi phep"]);
     expect(workbook.Sheets["Cham cong"]["A1"].v).toBe("Nhân viên");
     expect(workbook.Sheets["Nghi phep"]["B2"].v).toBe(2);
+  });
+});
+
+describe("employee monthly summary", () => {
+  it("groups attendance and leave data by employee and month", () => {
+    const rows = buildEmployeeMonthlySummary(
+      [
+        { employeeId: 1, workDate: "2026-08-01T00:00:00Z", status: "present" },
+        { employeeId: 1, workDate: "2026-08-02T00:00:00Z", status: "late" },
+        { employeeId: 2, workDate: "2026-09-01T00:00:00Z", status: "absent" },
+      ],
+      [
+        { employeeId: 1, startDate: "2026-08-10T00:00:00Z", totalDays: "2", leaveType: "annual", status: "approved" },
+        { employeeId: 1, startDate: "2026-08-20T00:00:00Z", totalDays: 1, leaveType: "sick", status: "pending" },
+      ],
+      [{ id: 1, employeeCode: "E001", fullName: "Bảo Bảo" }, { id: 2, employeeCode: "E002", fullName: "Lan Lan" }],
+    );
+    expect(rows).toEqual([
+      ["Bảo Bảo", "E001", "2026-08", 2, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0, 1],
+      ["Lan Lan", "E002", "2026-09", 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
+  });
+
+  it("returns no rows for empty datasets", () => {
+    expect(buildEmployeeMonthlySummary([], [], [])).toEqual([]);
   });
 });

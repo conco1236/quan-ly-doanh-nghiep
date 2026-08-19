@@ -262,3 +262,11 @@
 - [x] Nâng cấp nút xuất Excel sang .xlsx và giữ CSV độc lập
 - [x] Bổ sung test workbook có nhiều sheet, tiêu đề tiếng Việt và dữ liệu rỗng
 - [x] Kiểm tra dependency, TypeScript, Vitest, build và responsive trước checkpoint
+
+## Sheet tổng hợp Nhân viên - Tháng
+
+- [x] Thiết kế chỉ số tổng hợp ngày công theo trạng thái và ngày phép theo loại
+- [x] Tạo helper tổng hợp theo employeeId và tháng từ dữ liệu chấm công/nghỉ phép
+- [x] Thêm sheet Tổng hợp vào workbook XLSX native
+- [x] Bổ sung test nhóm dữ liệu nhiều nhân viên/tháng và trường hợp rỗng
+- [x] Kiểm tra TypeScript, Vitest, build và responsive trước checkpoint
