@@ -12,6 +12,23 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
+export const employees = mysqlTable("employees", {
+  id: int("id").autoincrement().primaryKey(),
+  employeeCode: varchar("employeeCode", { length: 40 }).notNull().unique(),
+  fullName: varchar("fullName", { length: 160 }).notNull(),
+  phone: varchar("phone", { length: 40 }),
+  email: varchar("email", { length: 160 }),
+  address: text("address"),
+  department: varchar("department", { length: 120 }).notNull(),
+  position: varchar("position", { length: 120 }).notNull(),
+  employmentStatus: mysqlEnum("employmentStatus", ["active", "on_leave", "terminated"]).default("active").notNull(),
+  hireDate: timestamp("hireDate"),
+  notes: text("notes"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => ({ ownerIdx: index("employees_created_by_idx").on(table.createdBy), departmentIdx: index("employees_department_idx").on(table.department), statusIdx: index("employees_status_idx").on(table.employmentStatus), nameIdx: index("employees_name_idx").on(table.fullName) }));
+
 export const ingredients = mysqlTable("ingredients", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 160 }).notNull(),
@@ -216,6 +233,7 @@ export const qcResults = mysqlTable("qc_results", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+export type Employee = typeof employees.$inferSelect;
 export type Ingredient = typeof ingredients.$inferSelect;
 export type BeerType = typeof beerTypes.$inferSelect;
 export type ProductionBatch = typeof productionBatches.$inferSelect;

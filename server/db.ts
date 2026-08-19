@@ -1,6 +1,6 @@
 import { and, desc, eq, lt, sql, isNull, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles } from "../drizzle/schema";
+import { InsertUser, users, employees, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, auditLogs, workflowTasks, qcStandards, qcResults, storedFiles } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -33,6 +33,8 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
 }
+
+export async function listEmployees(ownerId?: number) { const db = await getDb(); return db ? db.select().from(employees).where(ownerId ? eq(employees.createdBy, ownerId) : undefined).orderBy(desc(employees.updatedAt)) : []; }
 
 export async function listIngredients(ownerId?: number) { const db = await getDb(); return db ? db.select().from(ingredients).where(ownerId ? eq(ingredients.createdBy, ownerId) : undefined).orderBy(desc(ingredients.updatedAt)) : []; }
 export async function listIngredientsPage(input: { limit: number; cursor?: number; ownerId?: number }) { const db = await getDb(); if (!db) return { items: [], nextCursor: null }; const items = await db.select().from(ingredients).where(input.cursor && input.ownerId ? and(lt(ingredients.id, input.cursor), eq(ingredients.createdBy, input.ownerId)) : input.cursor ? lt(ingredients.id, input.cursor) : input.ownerId ? eq(ingredients.createdBy, input.ownerId) : undefined).orderBy(desc(ingredients.id)).limit(input.limit + 1); const hasMore = items.length > input.limit; const page = hasMore ? items.slice(0, input.limit) : items; return { items: page, nextCursor: hasMore ? page[page.length - 1]?.id ?? null : null }; }

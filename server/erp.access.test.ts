@@ -22,6 +22,12 @@ describe("admin access control", () => {
     await expect(appRouter.createCaller(denied).admin.users()).rejects.toThrow("IP");
   });
 
+  it("blocks employee mutations in read_only and deny modes", async () => {
+    const input = { employeeCode: "NV-GUARD", fullName: "Guard Test", department: "HR", position: "Staff" };
+    await expect(appRouter.createCaller({ ...context("user"), accessMode: "read_only" }).employees.create(input)).rejects.toThrow("chỉ được xem");
+    await expect(appRouter.createCaller({ ...context("admin"), accessMode: "deny" }).employees.create(input)).rejects.toThrow("IP");
+  });
+
   it("blocks protected mutations in read_only and deny modes", async () => {
     const input = { name: "Guard test", unit: "kg", stockQuantity: 1, lowStockThreshold: 1 };
     await expect(appRouter.createCaller({ ...context("user"), accessMode: "read_only" }).ingredients.create(input)).rejects.toThrow("chỉ được xem");

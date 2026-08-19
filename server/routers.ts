@@ -2,8 +2,8 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDb, dashboardSummary, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks, getProductionReport, getInventoryReport } from "./db";
-import { ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, users, auditLogs, workflowTasks, qcStandards, qcResults, deviceSessions } from "../drizzle/schema";
+import { getDb, dashboardSummary, listEmployees, listIngredients, listIngredientsPage, listLowStockIngredients, listInventoryTransactions, listBeerTypes, listRecipes, listProductionBatches, listProductionSteps, listCustomers, listProducts, listSalesOrders, listAuditLogs, listWorkflowTasks, listQcStandards, listQcResults, selectQcStandardForBeerType, getCrossSheetLinks, getProductionReport, getInventoryReport } from "./db";
+import { employees, ingredients, inventoryTransactions, beerTypes, recipes, productionBatches, productionSteps, customers, beerProducts, salesOrders, salesOrderItems, users, auditLogs, workflowTasks, qcStandards, qcResults, deviceSessions } from "../drizzle/schema";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
 import { getRequestMeta, recordAudit } from "./erp-security";
@@ -12,6 +12,7 @@ const idInput = z.object({ id: z.number().int().positive() });
 const ingredientInput = z.object({ name: z.string().min(1), unit: z.string().min(1), stockQuantity: z.number().nonnegative(), lowStockThreshold: z.number().nonnegative(), supplier: z.string().optional(), notes: z.string().optional() });
 const beerInput = z.object({ name: z.string().min(1), description: z.string().optional(), abv: z.number().nonnegative(), color: z.string().optional() });
 const customerInput = z.object({ name: z.string().min(1), phone: z.string().optional(), address: z.string().optional(), provinceCode: z.string().max(16).optional(), districtCode: z.string().max(16).optional(), email: z.string().optional(), notes: z.string().optional() });
+const employeeInput = z.object({ employeeCode: z.string().min(1).max(40), fullName: z.string().min(1).max(160), phone: z.string().max(40).optional(), email: z.string().email().optional().or(z.literal("")), address: z.string().optional(), department: z.string().min(1).max(120), position: z.string().min(1).max(120), employmentStatus: z.enum(["active", "on_leave", "terminated"]).default("active"), hireDate: z.coerce.date().optional(), notes: z.string().optional() });
 
 const requireAdmin = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "admin") throw new Error("Bạn không có quyền truy cập khu vực quản trị");
@@ -38,6 +39,12 @@ export const appRouter = router({
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
   }),
   dashboard: router({ summary: protectedProcedure.query(() => dashboardSummary()) }),
+  employees: router({
+    list: protectedProcedure.query(({ ctx }) => listEmployees(ctx.user.role === "admin" ? undefined : ctx.user.id)),
+    create: protectedProcedure.input(employeeInput).mutation(async ({ input, ctx }) => { const db = await getDb(); if (!db) throw new Error("Database chưa sẵn sàng"); const [row] = await db.insert(employees).values({ ...input, hireDate: input.hireDate, createdBy: ctx.user.id }); await recordAudit({ tableName: "employees", recordId: row.insertId, action: "create", actorId: ctx.user.id, newValue: input, meta: getRequestMeta(ctx.req) }); return { success: true, employeeId: row.insertId }; }),
+    update: protectedProcedure.input(idInput.merge(employeeInput)).mutation(async ({ input, ctx }) => { const db = await getDb(); if (!db) throw new Error("Database chưa sẵn sàng"); const current = (await db.select().from(employees).where(eq(employees.id, input.id)).limit(1))[0]; assertOwner(current, ctx); const { id, ...data } = input; await db.update(employees).set(data).where(eq(employees.id, id)); await recordAudit({ tableName: "employees", recordId: id, action: "update", actorId: ctx.user.id, oldValue: current, newValue: data, meta: getRequestMeta(ctx.req) }); return { success: true }; }),
+    delete: protectedProcedure.input(idInput).mutation(async ({ input, ctx }) => { const db = await getDb(); if (!db) throw new Error("Database chưa sẵn sàng"); const current = (await db.select().from(employees).where(eq(employees.id, input.id)).limit(1))[0]; assertOwner(current, ctx); await db.delete(employees).where(eq(employees.id, input.id)); await recordAudit({ tableName: "employees", recordId: input.id, action: "delete", actorId: ctx.user.id, oldValue: current, meta: getRequestMeta(ctx.req) }); return { success: true }; }),
+  }),
   reports: router({
     production: protectedProcedure.input(z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() }).optional()).query(({ input, ctx }) => getProductionReport({ ...input, ownerId: ctx.user.role === "admin" ? undefined : ctx.user.id })),
     inventory: protectedProcedure.input(z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() }).optional()).query(({ input, ctx }) => getInventoryReport({ ...input, ownerId: ctx.user.role === "admin" ? undefined : ctx.user.id })),

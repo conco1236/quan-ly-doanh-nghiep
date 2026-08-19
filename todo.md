@@ -224,3 +224,13 @@
 - [x] Thêm bộ lọc phân hệ Tất cả / Sản xuất / Kho bãi và áp dụng điều kiện tải/hiển thị
 - [x] Bổ sung test byStatus/byDay sản xuất và totalStock/lowStockCount/movementsByDay kho
 - [x] Áp dụng bộ lọc phân hệ cho toàn bộ KPI đầu trang
+
+## Phân hệ Nhân sự CRUD
+
+- [x] Thiết kế bảng employees với mã nhân viên, hồ sơ liên hệ, phòng ban, chức danh, trạng thái và ngày vào làm
+- [x] Tạo migration employees và áp dụng schema vào database
+- [x] Thêm helper database và API tRPC CRUD Nhân sự với owner/RLS và audit oldValue/newValue
+- [x] Tích hợp màn hình Nhân sự tiếng Việt: danh sách, tìm kiếm, tạo mới, chỉnh sửa, khóa/nghỉ việc và chi tiết
+- [x] Bổ sung validation, loading/empty/error states và responsive cho Nhân sự
+- [x] Viết unit/integration tests cho validation, quyền sở hữu và CRUD Nhân sự
+- [x] Kiểm tra TypeScript, Vitest, build và screenshot trước checkpoint
