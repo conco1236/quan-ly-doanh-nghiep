@@ -544,3 +544,11 @@
 - [x] Tách BrandingPanel thành mô-đun lazy-load
 - [x] Bổ sung test hồi quy, xác minh RBAC/PDF và đo bundle
 - [x] Lưu checkpoint tách chunk quản trị
+
+## Tách chunk Tài chính và Nhân sự
+
+- [x] Khảo sát phụ thuộc FinancePanel và HRTimePanel
+- [x] Tách FinancePanel thành mô-đun lazy-load
+- [x] Tách HRTimePanel thành mô-đun lazy-load
+- [x] Bổ sung test hồi quy xuất báo cáo và đo bundle
+- [x] Lưu checkpoint tách chunk nghiệp vụ
