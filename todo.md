@@ -585,3 +585,11 @@
 - [x] Tách các phân hệ danh mục/đơn hàng/khách hàng thành chunk theo nhu cầu
 - [x] Bổ sung test hồi quy CRUD/liên kết chéo và đo bundle
 - [x] Lưu checkpoint tối ưu orchestration
+
+## Tách chunk KPI và biểu đồ Dashboard
+
+- [x] Khảo sát phụ thuộc KPI, biểu đồ doanh thu và trạng thái sản xuất
+- [x] Tách KPI Dashboard thành mô-đun lazy-load
+- [x] Tách biểu đồ Dashboard thành mô-đun lazy-load theo ngữ cảnh
+- [x] Bổ sung test hồi quy dashboard và đo bundle
+- [x] Lưu checkpoint tối ưu dashboard

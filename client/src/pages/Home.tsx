@@ -25,9 +25,12 @@ const LazyInventoryPanel = lazy(() => import("./InventoryPanel"));
 const LazyProductionPanel = lazy(() => import("./ProductionPanel"));
 const LazyQCPanel = lazy(() => import("./QCPanel"));
 const LazySharedModuleTable = lazy(() => import("./SharedModuleTable"));
+const LazyDashboardKpiPanel = lazy(() => import("./DashboardKpiPanel"));
+const LazyDashboardChartsPanel = lazy(() => import("./DashboardChartsPanel"));
 const adminPanelFallback = <div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải khu vực quản trị...</div>;
 const businessPanelFallback = <div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải phân hệ nghiệp vụ...</div>;
 function ModuleTable(props: any) { return <Suspense fallback={businessPanelFallback}><LazySharedModuleTable {...props} /></Suspense>; }
+function DashboardOptimized({ summary }: { summary: any }) { return <div><div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="mb-2 text-sm text-slate-500">Thứ tư, 19 tháng 8, 2026</p><h2 className="font-display text-3xl font-bold tracking-tight">Chào buổi sáng, <span className="text-amber-300">quản trị viên</span></h2><p className="mt-2 text-sm text-slate-400">Đây là tình hình vận hành của nhà máy hôm nay.</p></div><div className="flex gap-2"><Button variant="outline" className="border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"><FileText size={16} /> Xuất báo cáo</Button><Button className="bg-amber-400 text-[#08111f] hover:bg-amber-300"><Plus size={16} /> Tác vụ nhanh</Button></div></div><Suspense fallback={businessPanelFallback}><LazyDashboardKpiPanel summary={summary} /></Suspense><div className="mt-5"><Suspense fallback={businessPanelFallback}><LazyDashboardChartsPanel /></Suspense></div><div className="mt-5 grid gap-5 xl:grid-cols-[1.3fr_1fr]"><InventoryPreview /><OrdersPreview /></div></div>; }
 
 const navGroups = [
   { label: "TỔNG QUAN", items: [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard }] },
@@ -87,7 +90,7 @@ export default function Home() {
 
   const stats = summary.data;
   const renderContent = () => {
-    if (active === "dashboard") return <Dashboard summary={stats} />;
+    if (active === "dashboard") return <DashboardOptimized summary={stats} />;
     if (active === "inventory") return <Suspense fallback={businessPanelFallback}><LazyInventoryPanel /></Suspense>;
     if (active === "production") return <Suspense fallback={businessPanelFallback}><LazyProductionPanel /></Suspense>;
     if (active === "qc") return <Suspense fallback={businessPanelFallback}><LazyQCPanel /></Suspense>;

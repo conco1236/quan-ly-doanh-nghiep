@@ -57,6 +57,14 @@ describe("lazy-loaded report surfaces", () => {
     expect(home).toContain("<LazySharedModuleTable");
   });
 
+  it("loads dashboard KPI and chart surfaces in contextual chunks", () => {
+    const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+    expect(home).toContain('lazy(() => import("./DashboardKpiPanel"))');
+    expect(home).toContain('lazy(() => import("./DashboardChartsPanel"))');
+    expect(home).toContain("<LazyDashboardKpiPanel");
+    expect(home).toContain("<LazyDashboardChartsPanel");
+  });
+
   it("does not statically import html2canvas into client export helpers", () => {
     const exportSource = readFileSync(resolve(process.cwd(), "client/src/lib/export.ts"), "utf8");
     expect(exportSource).not.toContain('from "html2canvas"');
