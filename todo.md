@@ -644,3 +644,9 @@
 - [x] Thiết kế board cùng trạng thái theo dõi yêu cầu
 - [x] Tạo Project và tự động thêm issue requirement
 - [x] Xác minh board, luồng tự động và cập nhật tài liệu
+
+## Hoàn tất bàn giao ứng dụng
+
+- [x] Kiểm tra trạng thái Git, GitHub và các pull request còn mở
+- [x] Đồng bộ mọi thay đổi còn lại lên nhánh main theo branch protection
+- [x] Xác minh phiên bản cuối và bàn giao ứng dụng
