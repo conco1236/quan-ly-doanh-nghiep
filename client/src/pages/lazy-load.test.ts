@@ -33,6 +33,14 @@ describe("lazy-loaded report surfaces", () => {
     expect(home).toContain("<LazyEmployeesPanel");
   });
 
+  it("loads purchasing and maintenance surfaces only after their module is opened", () => {
+    const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+    expect(home).toContain('lazy(() => import("./PurchasingPanel"))');
+    expect(home).toContain('lazy(() => import("./MaintenancePanel"))');
+    expect(home).toContain("<LazyPurchasingPanel");
+    expect(home).toContain("<LazyMaintenancePanel");
+  });
+
   it("does not statically import html2canvas into client export helpers", () => {
     const exportSource = readFileSync(resolve(process.cwd(), "client/src/lib/export.ts"), "utf8");
     expect(exportSource).not.toContain('from "html2canvas"');

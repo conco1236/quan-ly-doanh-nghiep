@@ -560,3 +560,11 @@
 - [x] Tách EmployeesPanel thành mô-đun lazy-load
 - [x] Bổ sung test hồi quy POS/nhân sự và đo bundle
 - [x] Lưu checkpoint tách chunk POS và nhân sự
+
+## Tách chunk Mua hàng và Bảo trì
+
+- [x] Khảo sát phụ thuộc PurchasingPanel và MaintenancePanel
+- [x] Tách PurchasingPanel thành mô-đun lazy-load
+- [x] Tách MaintenancePanel thành mô-đun lazy-load
+- [x] Bổ sung test hồi quy nghiệp vụ và đo bundle
+- [x] Lưu checkpoint tách chunk mua hàng/bảo trì

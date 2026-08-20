@@ -19,6 +19,8 @@ const LazyFinancePanel = lazy(() => import("./FinancePanel"));
 const LazyHRTimePanel = lazy(() => import("./HRTimePanel"));
 const LazyPOSPanel = lazy(() => import("./POSPanel"));
 const LazyEmployeesPanel = lazy(() => import("./EmployeesPanel"));
+const LazyPurchasingPanel = lazy(() => import("./PurchasingPanel"));
+const LazyMaintenancePanel = lazy(() => import("./MaintenancePanel"));
 const adminPanelFallback = <div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải khu vực quản trị...</div>;
 const businessPanelFallback = <div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải phân hệ nghiệp vụ...</div>;
 
@@ -90,8 +92,8 @@ export default function Home() {
     if (active === "customers") { const rows = customersQuery.data?.map((item: any) => ({ name: item.name, recordId: item.id, tableName: "customers", sku: `KH-${String(item.id).padStart(4, "0")}`, qty: item.phone || "-", unit: item.address || "Chưa cập nhật", threshold: "Xem lịch sử", status: "Hoạt động", color: "green" })) ?? []; return <ModuleTable title="Khách hàng" eyebrow="KINH DOANH / ĐỐI TÁC" icon={Users} search={query} setSearch={setQuery} action="Thêm khách hàng" rows={rows} columns={["Tên khách hàng", "Mã KH", "Điện thoại", "Khu vực", "Lịch sử mua", "Trạng thái"]} loading={customersQuery.isLoading} error={customersQuery.isError} onSave={(form: any) => customerCreate.mutateAsync(buildCustomerCreatePayload(form.name, form.value, form.province, form.district))} saving={customerCreate.isPending} />; }
     if (active === "hr") return <Suspense fallback={businessPanelFallback}><LazyEmployeesPanel /></Suspense>;
     if (active === "cashflow") return <Suspense fallback={businessPanelFallback}><LazyFinancePanel /></Suspense>;
-    if (active === "purchasing") return <PurchasingPanel />;
-    if (active === "maintenance") return <MaintenancePanel />;
+    if (active === "purchasing") return <Suspense fallback={businessPanelFallback}><LazyPurchasingPanel /></Suspense>;
+    if (active === "maintenance") return <Suspense fallback={businessPanelFallback}><LazyMaintenancePanel /></Suspense>;
     if (active === "admin") return userIsAdmin ? <Suspense fallback={adminPanelFallback}><LazyAdminUsersPanel /></Suspense> : <AccessDenied />;
     if (active === "branding") return userIsAdmin ? <Suspense fallback={adminPanelFallback}><LazyBrandingPanel /></Suspense> : <AccessDenied />;
     return <Suspense fallback={<div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải mô-đun báo cáo...</div>}><LazyReportsPanel /></Suspense>;
