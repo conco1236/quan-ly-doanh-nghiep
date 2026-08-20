@@ -593,3 +593,9 @@
 - [x] Tách biểu đồ Dashboard thành mô-đun lazy-load theo ngữ cảnh
 - [x] Bổ sung test hồi quy dashboard và đo bundle
 - [x] Lưu checkpoint tối ưu dashboard
+
+## Đồng bộ GitHub
+
+- [ ] Kiểm tra remote, nhánh và thay đổi cục bộ
+- [ ] Commit phiên bản ERP đã kiểm thử
+- [ ] Đẩy commit lên GitHub và xác minh trạng thái đồng bộ
