@@ -504,3 +504,11 @@
 - [x] Thêm API Admin khóa/mở khóa, audit và bảo vệ Admin cuối cùng
 - [x] Hiển thị thao tác và trạng thái tài khoản trong AdminUsersPanel
 - [x] Bổ sung test auth/RBAC và chạy full validation
+
+## Rà soát và ổn định ứng dụng
+
+- [x] Chạy lại test, TypeScript, build và rà soát log runtime
+- [x] Kiểm tra các luồng RBAC, khóa tài khoản và thao tác quản trị
+- [x] Kiểm tra giao diện desktop/mobile của các màn hình trọng yếu
+- [x] Sửa lỗi có thể tái hiện và bổ sung test hồi quy
+- [x] Lưu checkpoint ổn định sau xác minh

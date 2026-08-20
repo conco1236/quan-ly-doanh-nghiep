@@ -183,9 +183,9 @@ export async function loadImageAsDataUrl(url?: string | null) { if (!url) return
 
 export function createPdfReportBlob(title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-  const companyName = approval.companyName ?? "BREWERYOS";
+  const companyName = approval.companyName ?? "Quản Lý Doanh Nghiệp";
   doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11, approval.logoDataUrl, approval.logoMimeType);
-  doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(normalizePdfText(companyName), 76, 27); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.companyTagline ?? "He thong quan tri nha may bia"), 76, 41); doc.setFontSize(18); doc.text(normalizePdfText(title), 590, 35, { align: "right" });
+  doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(normalizePdfText(companyName), 76, 27); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.text(normalizePdfText(approval.companyTagline ?? "Hệ thống quản trị doanh nghiệp"), 76, 41); doc.setFontSize(18); doc.text(normalizePdfText(title), 590, 35, { align: "right" });
   doc.setTextColor(36, 59, 83); doc.setFontSize(9);
   let y = 82;
   for (const line of summary ?? []) { doc.text(normalizePdfText(line), 32, y); y += 15; }

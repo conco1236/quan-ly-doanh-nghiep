@@ -1,0 +1,2 @@
+ALTER TABLE `system_branding` MODIFY COLUMN `companyName` varchar(160) NOT NULL DEFAULT 'Quản Lý Doanh Nghiệp';--> statement-breakpoint
+ALTER TABLE `system_branding` MODIFY COLUMN `tagline` varchar(240) NOT NULL DEFAULT 'Hệ thống quản trị doanh nghiệp';

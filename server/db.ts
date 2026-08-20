@@ -14,9 +14,9 @@ export async function getDb() {
 
 export async function getSystemBranding() {
   const db = await getDb();
-  if (!db) return { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+  if (!db) return { id: 1, companyName: "Quản Lý Doanh Nghiệp", tagline: "Hệ thống quản trị doanh nghiệp", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
   const [row] = await db.select().from(systemBranding).limit(1);
-  return row ?? { id: 1, companyName: "BREWERYOS", tagline: "He thong quan tri nha may bia", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
+  return row ?? { id: 1, companyName: "Quản Lý Doanh Nghiệp", tagline: "Hệ thống quản trị doanh nghiệp", address: "", hotline: "", taxCode: "", email: "", website: "", logoKey: null, logoUrl: null, logoMimeType: null, logoSize: null, updatedBy: null };
 }
 
 export async function saveSystemBranding(input: { companyName?: string; tagline?: string; address?: string; hotline?: string; taxCode?: string; email?: string; website?: string; logoKey?: string | null; logoUrl?: string | null; logoMimeType?: string | null; logoSize?: number | null; updatedBy: number }) {

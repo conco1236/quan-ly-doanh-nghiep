@@ -15,8 +15,8 @@ export const users = mysqlTable("users", {
 
 export const systemBranding = mysqlTable("system_branding", {
   id: int("id").autoincrement().primaryKey(),
-  companyName: varchar("companyName", { length: 160 }).default("BREWERYOS").notNull(),
-  tagline: varchar("tagline", { length: 240 }).default("He thong quan tri nha may bia").notNull(),
+  companyName: varchar("companyName", { length: 160 }).default("Quản Lý Doanh Nghiệp").notNull(),
+  tagline: varchar("tagline", { length: 240 }).default("Hệ thống quản trị doanh nghiệp").notNull(),
   address: varchar("address", { length: 300 }).default("").notNull(),
   hotline: varchar("hotline", { length: 40 }).default("").notNull(),
   taxCode: varchar("taxCode", { length: 40 }).default("").notNull(),
