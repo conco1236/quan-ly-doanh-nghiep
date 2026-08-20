@@ -512,3 +512,11 @@
 - [x] Kiểm tra giao diện desktop/mobile của các màn hình trọng yếu
 - [x] Sửa lỗi có thể tái hiện và bổ sung test hồi quy
 - [x] Lưu checkpoint ổn định sau xác minh
+
+## Tối ưu lazy load xuất PDF/XLSX
+
+- [x] Khảo sát dependency và kích thước bundle xuất file hiện tại
+- [x] Lazy load thư viện PDF/XLSX theo thao tác người dùng
+- [x] Cập nhật luồng xuất và xem trước PDF để chờ mô-đun bất đồng bộ
+- [x] Bổ sung test hồi quy và xác minh giảm bundle ban đầu
+- [x] Lưu checkpoint tối ưu hiệu suất

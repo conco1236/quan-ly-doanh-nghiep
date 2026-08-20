@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { escapeCsvCell, toCsv, buildDepartmentChartRows, buildHrAttendanceReportSheets, buildPosReconciliationSheets, buildXlsxWorkbook, buildEmployeeMonthlySummary, createPdfReportBlob, departmentsForPreset, filterByDepartments, normalizePdfText } from "./export";
 
 describe("PDF preview helpers", () => {
-  it("creates a non-empty PDF Blob using approval branding", () => {
-    const blob = createPdfReportBlob("Báo cáo xem trước", ["Chỉ tiêu", "Giá trị"], [["Doanh thu", 1200000]], ["BẢN XEM TRƯỚC"], { companyName: "Công ty Bia ABC", companyTagline: "Uống có trách nhiệm", approverName: "Admin" });
+  it("creates a non-empty PDF Blob using approval branding", async () => {
+    const blob = await createPdfReportBlob("Báo cáo xem trước", ["Chỉ tiêu", "Giá trị"], [["Doanh thu", 1200000]], ["BẢN XEM TRƯỚC"], { companyName: "Công ty Bia ABC", companyTagline: "Uống có trách nhiệm", approverName: "Admin" });
     expect(blob.type).toBe("application/pdf");
     expect(blob.size).toBeGreaterThan(100);
   });
@@ -24,8 +26,8 @@ describe("report export helpers", () => {
 });
 
 describe("native XLSX workbook", () => {
-  it("creates separate attendance and leave sheets", () => {
-    const workbook = buildXlsxWorkbook([
+  it("creates separate attendance and leave sheets", async () => {
+    const workbook = await buildXlsxWorkbook([
       { name: "Cham cong", headers: ["Nhân viên", "Ngày"], rows: [["Bảo Bảo", "19/08/2026"]] },
       { name: "Nghi phep", headers: ["Nhân viên", "Số ngày"], rows: [["Bảo Bảo", 2]] },
     ]);
@@ -44,12 +46,12 @@ describe("native XLSX workbook", () => {
 });
 
 describe("POS and HR report workbooks", () => {
-  it("builds POS reconciliation report with difference and counts", () => {
+  it("builds POS reconciliation report with difference and counts", async () => {
     const sheets = buildPosReconciliationSheets({ posRevenue: 1200000, reconciledRevenue: 1000000, difference: 200000, completedOrders: 12, linkedReceipts: 10 });
     expect(sheets[0].name).toBe("Doi soat POS");
     expect(sheets[0].rows[0]).toEqual(["Doanh thu POS hoàn tất", 1200000, "Tổng đơn có trạng thái hoàn thành"]);
     expect(sheets[0].rows[2][1]).toBe(200000);
-    expect(buildXlsxWorkbook(sheets).Sheets["Doi soat POS"]["A8"].v).toBe("Tổng cộng");
+    expect((await buildXlsxWorkbook(sheets)).Sheets["Doi soat POS"]["A8"].v).toBe("Tổng cộng");
   });
   it("builds HR sheets filtered by month with summary and chart", () => {
     const sheets = buildHrAttendanceReportSheets([{ employeeId: 1, workDate: "2026-08-01T00:00:00Z", status: "present" }, { employeeId: 1, workDate: "2026-09-01T00:00:00Z", status: "absent" }], [{ employeeId: 1, startDate: "2026-08-10T00:00:00Z", totalDays: 2, leaveType: "annual", status: "approved" }], [{ id: 1, employeeCode: "E01", fullName: "A", department: "Sản xuất" }], "2026-08");
@@ -64,6 +66,16 @@ describe("POS and HR report workbooks", () => {
 describe("PDF branding and approval metadata", () => {
   it("normalizes Vietnamese text for the built-in PDF font", () => {
     expect(normalizePdfText("Báo cáo đối soát – Người phê duyệt: Đỗ Bảo")).toBe("Bao cao doi soat – Nguoi phe duyet: Do Bao");
+  });
+});
+
+describe("lazy-loaded export modules", () => {
+  it("keeps PDF and XLSX packages out of the static import graph", () => {
+    const source = readFileSync(resolve(process.cwd(), "client/src/lib/export.ts"), "utf8");
+    expect(source).toContain('import("xlsx-js-style")');
+    expect(source).toContain('import("jspdf")');
+    expect(source).not.toContain('import * as XLSX from "xlsx-js-style"');
+    expect(source).not.toContain('import { jsPDF } from "jspdf"');
   });
 });
 
@@ -103,8 +115,8 @@ describe("employee monthly summary", () => {
     ]);
   });
 
-  it("groups the summary sheet and creates department subtotals", () => {
-    const workbook = buildXlsxWorkbook([{ name: "Tong hop", headers: ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công"], rows: [["Lan Lan", "E002", "Kho", "2026-09", 1], ["Bảo Bảo", "E001", "Sản xuất", "2026-08", 2]], groupByColumn: 2 }]);
+  it("groups the summary sheet and creates department subtotals", async () => {
+    const workbook = await buildXlsxWorkbook([{ name: "Tong hop", headers: ["Nhân viên", "Mã nhân viên", "Phòng ban", "Tháng", "Tổng ngày công"], rows: [["Lan Lan", "E002", "Kho", "2026-09", 1], ["Bảo Bảo", "E001", "Sản xuất", "2026-08", 2]], groupByColumn: 2 }]);
     const sheet = workbook.Sheets["Tong hop"];
     expect(sheet["A3"].v).toBe("Subtotal - Kho");
     expect(sheet["E3"].f).toBe("SUM(E2:E2)");
@@ -115,13 +127,13 @@ describe("employee monthly summary", () => {
     expect(sheet["A3"].s.font.bold).toBe(true);
   });
 
-  it("builds department ratios and visual bars", () => {
+  it("builds department ratios and visual bars", async () => {
     const rows = buildDepartmentChartRows([
       ["A", "E1", "Kho", "2026-08", 8, 8, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0],
       ["B", "E2", "Kho", "2026-08", 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]);
     expect(rows[0].slice(0, 5)).toEqual(["Kho", 10, 2, 83.33, 16.67]);
-    const workbook = buildXlsxWorkbook([{ name: "Bieu do", headers: ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"], rows, visualBarColumns: [{ sourceColumn: 3, targetColumn: 5, divisor: 5, color: "D6A72D" }, { sourceColumn: 4, targetColumn: 6, divisor: 5, color: "18B6C9" }] }]);
+    const workbook = await buildXlsxWorkbook([{ name: "Bieu do", headers: ["Phòng ban", "Ngày công", "Ngày nghỉ phép", "Tỷ lệ ngày công (%)", "Tỷ lệ ngày nghỉ (%)", "Biểu đồ ngày công", "Biểu đồ ngày nghỉ"], rows, visualBarColumns: [{ sourceColumn: 3, targetColumn: 5, divisor: 5, color: "D6A72D" }, { sourceColumn: 4, targetColumn: 6, divisor: 5, color: "18B6C9" }] }]);
     expect(workbook.Sheets["Bieu do"]["A2"].v).toBe("Kho");
     expect(workbook.Sheets["Bieu do"]["F2"].v).toContain("█");
     expect(workbook.Sheets["Bieu do"]["F2"].f).toContain("REPT");

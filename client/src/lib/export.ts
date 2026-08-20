@@ -1,7 +1,17 @@
-import * as XLSX from "xlsx-js-style";
-import { jsPDF } from "jspdf";
-
 export type ExportCell = string | number | Date | null | undefined;
+type XlsxModule = typeof import("xlsx-js-style");
+type PdfDocument = import("jspdf").jsPDF;
+
+let xlsxModulePromise: Promise<XlsxModule> | undefined;
+let pdfModulePromise: Promise<typeof import("jspdf")> | undefined;
+
+function loadXlsxModule() {
+  return (xlsxModulePromise ??= import("xlsx-js-style"));
+}
+
+function loadPdfModule() {
+  return (pdfModulePromise ??= import("jspdf"));
+}
 
 export function escapeCsvCell(value: ExportCell) {
   const text = String(value ?? "");
@@ -71,7 +81,7 @@ function totalRowFor(sheet: ExcelSheet) { return sheet.headers.map((header, inde
 
 function cellDisplayValue(value: ExportCell) { return String(value ?? ""); }
 function columnWidth(header: string, values: ExportCell[]) { const maxLength = Math.max(header.length, ...values.map(value => cellDisplayValue(value).length)); return Math.min(32, Math.max(10, maxLength + 2)); }
-function applySheetFormatting(worksheet: any, sheet: ExcelSheet) {
+function applySheetFormatting(XLSX: XlsxModule, worksheet: any, sheet: ExcelSheet) {
   const totalRows = sheet.rows.length + 1;
   const totalColumns = sheet.headers.length;
   for (let column = 0; column < totalColumns; column += 1) {
@@ -94,7 +104,8 @@ function applySheetFormatting(worksheet: any, sheet: ExcelSheet) {
   worksheet["!autofilter"] = { ref: `A1:${XLSX.utils.encode_col(totalColumns - 1)}${totalRows}` };
 }
 
-export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
+export async function buildXlsxWorkbook(sheets: ExcelSheet[]) {
+  const XLSX = await loadXlsxModule();
   const workbook = XLSX.utils.book_new();
   for (const sheet of sheets) {
     const groupedRows: ExportCell[][] = [];
@@ -112,7 +123,7 @@ export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
     const rowsWithTotal = [...groupedRows, total];
     const formattedSheet = { ...sheet, rows: rowsWithTotal };
     const worksheet = XLSX.utils.aoa_to_sheet([sheet.headers, ...rowsWithTotal]);
-    applySheetFormatting(worksheet, formattedSheet);
+    applySheetFormatting(XLSX, worksheet, formattedSheet);
     const totalRowNumber = rowsWithTotal.length + 1;
     sheet.headers.forEach((header, column) => {
       if (!isSummableHeader(header) && !isCountableHeader(header)) return;
@@ -134,8 +145,8 @@ export function buildXlsxWorkbook(sheets: ExcelSheet[]) {
   return workbook;
 }
 
-export function downloadXlsx(filename: string, sheets: ExcelSheet[]) {
-  const workbook = buildXlsxWorkbook(sheets);
+export async function downloadXlsx(filename: string, sheets: ExcelSheet[]) {
+  const [workbook, XLSX] = await Promise.all([buildXlsxWorkbook(sheets), loadXlsxModule()]);
   const content = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
   downloadBlob(content, filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
@@ -176,12 +187,13 @@ export function buildHrAttendanceReportSheets(attendance: AttendanceSummaryInput
 
 export type PdfApprovalMeta = { approverName?: string; approverTitle?: string; companyName?: string; companyTagline?: string; logoDataUrl?: string; logoMimeType?: string };
 export function normalizePdfText(value: ExportCell) { return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }
-function drawBreweryLogo(doc: jsPDF, x: number, y: number, logoDataUrl?: string, logoMimeType?: string) { if (logoDataUrl) { try { doc.addImage(logoDataUrl, logoMimeType === "image/jpeg" ? "JPEG" : "PNG", x, y, 34, 34, undefined, "FAST"); return; } catch { /* fallback to the built-in mark */ } } doc.setFillColor(214, 167, 45); doc.roundedRect(x, y, 34, 34, 7, 7, "F"); doc.setTextColor(16, 42, 67); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("B", x + 10, y + 24); }
+function drawBreweryLogo(doc: PdfDocument, x: number, y: number, logoDataUrl?: string, logoMimeType?: string) { if (logoDataUrl) { try { doc.addImage(logoDataUrl, logoMimeType === "image/jpeg" ? "JPEG" : "PNG", x, y, 34, 34, undefined, "FAST"); return; } catch { /* fallback to the built-in mark */ } } doc.setFillColor(214, 167, 45); doc.roundedRect(x, y, 34, 34, 7, 7, "F"); doc.setTextColor(16, 42, 67); doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("B", x + 10, y + 24); }
 
 export async function loadImageAsDataUrl(url?: string | null) { if (!url) return undefined; try { const response = await fetch(url); if (!response.ok) return undefined; const blob = await response.blob(); return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob); }); } catch { return undefined; }
 }
 
-export function createPdfReportBlob(title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
+export async function createPdfReportBlob(title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
+  const { jsPDF } = await loadPdfModule();
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const companyName = approval.companyName ?? "Quản Lý Doanh Nghiệp";
   doc.setFillColor(16, 42, 67); doc.rect(0, 0, 842, 56, "F"); drawBreweryLogo(doc, 32, 11, approval.logoDataUrl, approval.logoMimeType);
@@ -201,7 +213,7 @@ export function createPdfReportBlob(title: string, headers: string[], rows: Expo
   return doc.output("blob");
 }
 
-export function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
-  const blob = createPdfReportBlob(title, headers, rows, summary, approval);
+export async function downloadPdfReport(filename: string, title: string, headers: string[], rows: ExportCell[][], summary?: string[], approval: PdfApprovalMeta = {}) {
+  const blob = await createPdfReportBlob(title, headers, rows, summary, approval);
   const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = filename.endsWith(".pdf") ? filename : `${filename}.pdf`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
