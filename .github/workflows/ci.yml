@@ -44,3 +44,52 @@ jobs:
 
       - name: Create production build
         run: pnpm build
+
+  integration:
+    name: Integration tests on isolated staging database
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      APP_ENV: staging
+      RUN_INTEGRATION_TESTS: "true"
+      STAGING_DATABASE_NAME: erp_staging
+      DATABASE_URL: mysql://root:root@127.0.0.1:3306/erp_staging
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: erp_staging
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply schema to isolated staging database
+        run: pnpm db:migrate
+
+      - name: Run staging integration tests
+        run: pnpm test:integration

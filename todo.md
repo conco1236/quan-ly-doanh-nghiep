@@ -605,3 +605,12 @@
 - [x] Kiểm tra scripts và phiên bản runtime dùng cho CI
 - [x] Tạo workflow Vitest, TypeScript và production build
 - [x] Xác minh workflow trên GitHub sau push
+
+## Môi trường staging và integration test
+
+- [x] Khảo sát hạ tầng database, secrets và deployment hiện có để xác định điểm cô lập staging
+- [x] Thiết kế cấu hình staging với database, secrets và dữ liệu test tách biệt production
+- [x] Bổ sung quy trình migration và integration test chỉ chạy trên database staging
+- [ ] Tạo hoặc kết nối database staging, áp dụng schema và kiểm tra không ảnh hưởng production
+- [ ] Cấu hình workflow GitHub Actions chạy integration test an toàn trên staging
+- [ ] Xác minh cô lập môi trường, chạy test staging và cập nhật tài liệu vận hành
