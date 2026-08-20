@@ -28,3 +28,6 @@ pnpm test:integration
 
 Nếu cần một staging bền vững để xem giao diện trước khi phát hành, cần cấp một database TiDB/MySQL riêng và một deployment staging riêng. Database đó phải dùng tên có hậu tố `staging`, credentials độc lập và không sao chép dữ liệu cá nhân từ production.
 
+## Chính sách merge trên GitHub
+
+Nhánh `main` đã được bảo vệ. Mọi thay đổi phải đi qua pull request, giải quyết toàn bộ hội thoại và có hai job CI thành công trên commit mới nhất trước khi merge: `Test, type-check and production build` và `Integration tests on isolated staging database`. Quy tắc áp dụng cả với quản trị viên; force-push và xóa nhánh bị tắt.
