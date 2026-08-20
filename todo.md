@@ -614,3 +614,11 @@
 - [x] Tạo hoặc kết nối database staging, áp dụng schema và kiểm tra không ảnh hưởng production
 - [x] Cấu hình workflow GitHub Actions chạy integration test an toàn trên staging
 - [x] Xác minh cô lập môi trường, chạy test staging và cập nhật tài liệu vận hành
+
+## Bảo vệ nhánh GitHub
+
+- [x] Kiểm tra quyền quản trị repository và quy tắc nhánh main hiện có
+- [x] Thiết kế policy yêu cầu toàn bộ job CI đạt trước khi merge
+- [x] Chuyển repository sang public theo xác nhận người dùng để bật branch protection
+- [x] Áp dụng branch protection cho main với required status checks
+- [x] Xác minh quy tắc và cập nhật tài liệu vận hành
