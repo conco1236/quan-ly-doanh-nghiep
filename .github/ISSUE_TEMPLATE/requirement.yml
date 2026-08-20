@@ -1,0 +1,35 @@
+name: Yêu cầu hệ thống
+description: Ghi nhận một yêu cầu mới để đồng bộ vào nhật ký repository.
+title: "[Yêu cầu]: "
+labels:
+  - requirement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Chỉ các yêu cầu do chủ sở hữu repository tạo mới được tự động đồng bộ vào nhật ký.
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Phạm vi
+      options:
+        - Nghiệp vụ ERP
+        - Báo cáo và dữ liệu
+        - Bảo mật và phân quyền
+        - Hạ tầng và CI/CD
+        - Trải nghiệm người dùng
+        - Khác
+    validations:
+      required: true
+  - type: textarea
+    id: requirement
+    attributes:
+      label: Yêu cầu chi tiết
+      description: Nêu kết quả mong muốn, quy tắc nghiệp vụ và tiêu chí chấp nhận.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Tiêu chí nghiệm thu
+      description: Mô tả điều kiện để xem yêu cầu là hoàn thành.

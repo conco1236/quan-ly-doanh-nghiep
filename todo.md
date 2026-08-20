@@ -622,3 +622,17 @@
 - [x] Chuyển repository sang public theo xác nhận người dùng để bật branch protection
 - [x] Áp dụng branch protection cho main với required status checks
 - [x] Xác minh quy tắc và cập nhật tài liệu vận hành
+
+## Tự động đồng bộ yêu cầu GitHub
+
+- [x] Xác định phạm vi yêu cầu và metadata cần đồng bộ lên GitHub
+- [x] Thiết kế luồng tạo nhánh/pull request tương thích branch protection
+- [x] Triển khai workflow tự động đồng bộ thay đổi yêu cầu và chạy CI
+- [ ] Xác minh pull request đồng bộ và cập nhật tài liệu vận hành
+
+## Nhật ký yêu cầu và auto-merge tài liệu
+
+- [x] Kiểm tra quyền GitHub và điều kiện auto-merge theo branch protection
+- [x] Thiết kế nhật ký yêu cầu và nhận diện pull request chỉ có tài liệu
+- [x] Triển khai workflow auto-merge an toàn sau khi CI đạt
+- [ ] Xác minh auto-merge và tài liệu vận hành
