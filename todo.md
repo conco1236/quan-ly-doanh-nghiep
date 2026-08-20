@@ -552,3 +552,11 @@
 - [x] Tách HRTimePanel thành mô-đun lazy-load
 - [x] Bổ sung test hồi quy xuất báo cáo và đo bundle
 - [x] Lưu checkpoint tách chunk nghiệp vụ
+
+## Tách chunk POS và Nhân sự
+
+- [x] Khảo sát phụ thuộc POSPanel và EmployeesPanel
+- [x] Tách POSPanel thành mô-đun lazy-load
+- [x] Tách EmployeesPanel thành mô-đun lazy-load
+- [x] Bổ sung test hồi quy POS/nhân sự và đo bundle
+- [x] Lưu checkpoint tách chunk POS và nhân sự
