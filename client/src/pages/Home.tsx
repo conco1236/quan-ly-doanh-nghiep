@@ -13,6 +13,9 @@ import { decorateNavItems } from "@shared/smartUi";
 import { buildDepartmentChartRows, buildEmployeeMonthlySummary, buildHrAttendanceReportSheets, buildPosReconciliationSheets, createPdfReportBlob, departmentChartHeaders, departmentsForPreset, downloadCsv, downloadPdfReport, downloadXlsx, employeeMonthlySummaryHeaders, filterByDepartments, loadImageAsDataUrl, type DepartmentPreset } from "@/lib/export";
 
 const LazyReportsPanel = lazy(() => import("./ReportsPanel"));
+const LazyAdminUsersPanel = lazy(() => import("./AdminUsersPanel"));
+const LazyBrandingPanel = lazy(() => import("./BrandingPanel"));
+const adminPanelFallback = <div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải khu vực quản trị...</div>;
 
 const navGroups = [
   { label: "TỔNG QUAN", items: [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard }] },
@@ -84,8 +87,8 @@ export default function Home() {
     if (active === "cashflow") return <FinancePanel />;
     if (active === "purchasing") return <PurchasingPanel />;
     if (active === "maintenance") return <MaintenancePanel />;
-    if (active === "admin") return userIsAdmin ? <AdminUsersPanel /> : <AccessDenied />;
-    if (active === "branding") return userIsAdmin ? <BrandingPanel /> : <AccessDenied />;
+    if (active === "admin") return userIsAdmin ? <Suspense fallback={adminPanelFallback}><LazyAdminUsersPanel /></Suspense> : <AccessDenied />;
+    if (active === "branding") return userIsAdmin ? <Suspense fallback={adminPanelFallback}><LazyBrandingPanel /></Suspense> : <AccessDenied />;
     return <Suspense fallback={<div className="glass rounded-2xl p-12 text-center text-sm text-slate-400">Đang tải mô-đun báo cáo...</div>}><LazyReportsPanel /></Suspense>;
   };
 

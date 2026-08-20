@@ -536,3 +536,11 @@
 - [x] Bổ sung regression test và kiểm tra tải dashboard
 - [x] Đo bundle/chunk sau tối ưu
 - [x] Lưu checkpoint tối ưu build
+
+## Tách chunk quản trị
+
+- [x] Khảo sát phụ thuộc AdminUsersPanel và BrandingPanel
+- [x] Tách AdminUsersPanel thành mô-đun lazy-load
+- [x] Tách BrandingPanel thành mô-đun lazy-load
+- [x] Bổ sung test hồi quy, xác minh RBAC/PDF và đo bundle
+- [x] Lưu checkpoint tách chunk quản trị
