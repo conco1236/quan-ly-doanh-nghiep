@@ -628,11 +628,12 @@
 - [x] Xác định phạm vi yêu cầu và metadata cần đồng bộ lên GitHub
 - [x] Thiết kế luồng tạo nhánh/pull request tương thích branch protection
 - [x] Triển khai workflow tự động đồng bộ thay đổi yêu cầu và chạy CI
-- [ ] Xác minh pull request đồng bộ và cập nhật tài liệu vận hành
+- [x] Xác minh pull request đồng bộ và cập nhật tài liệu vận hành
 
 ## Nhật ký yêu cầu và auto-merge tài liệu
 
 - [x] Kiểm tra quyền GitHub và điều kiện auto-merge theo branch protection
 - [x] Thiết kế nhật ký yêu cầu và nhận diện pull request chỉ có tài liệu
 - [x] Triển khai workflow auto-merge an toàn sau khi CI đạt
-- [ ] Xác minh auto-merge và tài liệu vận hành
+- [x] Không cấp credential GitHub riêng theo quyết định người dùng; giữ phương án phê duyệt CI thủ công khi GitHub yêu cầu
+- [x] Xác minh auto-merge và tài liệu vận hành
