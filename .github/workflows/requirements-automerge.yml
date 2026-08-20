@@ -1,0 +1,44 @@
+name: Auto-merge requirement documentation
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-automerge-for-documentation-only:
+    if: >-
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'requirements-sync')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify changed paths and enable auto-merge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pullRequest = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: pullRequest.number,
+              per_page: 100,
+            });
+            const allowedFiles = new Set(["docs/requirements.md"]);
+            const unexpected = files.map(file => file.filename).filter(file => !allowedFiles.has(file));
+            if (unexpected.length > 0) {
+              core.setFailed(`Pull request requirements-sync chỉ được sửa docs/requirements.md; phát hiện: ${unexpected.join(", ")}`);
+              return;
+            }
+
+            await github.graphql(
+              `mutation($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(input: {pullRequestId: $pullRequestId, mergeMethod: SQUASH}) {
+                  pullRequest { number }
+                }
+              }`,
+              { pullRequestId: pullRequest.node_id },
+            );
