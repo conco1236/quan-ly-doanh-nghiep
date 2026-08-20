@@ -568,3 +568,12 @@
 - [x] Tách MaintenancePanel thành mô-đun lazy-load
 - [x] Bổ sung test hồi quy nghiệp vụ và đo bundle
 - [x] Lưu checkpoint tách chunk mua hàng/bảo trì
+
+## Tách chunk Kho, Sản xuất và KCS/QC
+
+- [x] Khảo sát phụ thuộc panel Kho, Sản xuất và KCS/QC
+- [x] Tách panel Kho thành mô-đun lazy-load
+- [x] Tách panel Sản xuất thành mô-đun lazy-load
+- [x] Tách panel KCS/QC thành mô-đun lazy-load
+- [x] Bổ sung test hồi quy vận hành và đo bundle
+- [x] Lưu checkpoint tách chunk vận hành

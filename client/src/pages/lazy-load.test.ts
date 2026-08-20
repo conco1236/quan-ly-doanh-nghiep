@@ -41,6 +41,16 @@ describe("lazy-loaded report surfaces", () => {
     expect(home).toContain("<LazyMaintenancePanel");
   });
 
+  it("loads inventory, production and QC surfaces only after their module is opened", () => {
+    const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
+    expect(home).toContain('lazy(() => import("./InventoryPanel"))');
+    expect(home).toContain('lazy(() => import("./ProductionPanel"))');
+    expect(home).toContain('lazy(() => import("./QCPanel"))');
+    expect(home).toContain("<LazyInventoryPanel");
+    expect(home).toContain("<LazyProductionPanel");
+    expect(home).toContain("<LazyQCPanel");
+  });
+
   it("does not statically import html2canvas into client export helpers", () => {
     const exportSource = readFileSync(resolve(process.cwd(), "client/src/lib/export.ts"), "utf8");
     expect(exportSource).not.toContain('from "html2canvas"');
