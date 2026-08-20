@@ -11,3 +11,7 @@ Chỉ issue do chủ sở hữu repository tạo mới được đồng bộ. Pu
 ## Quy trình khi tiếp nhận yêu cầu qua trao đổi
 
 Mỗi yêu cầu mới được chuyển thành issue có nhãn `requirement`. GitHub sẽ lưu yêu cầu đó vào nhật ký qua pull request; việc triển khai mã nguồn tiếp theo vẫn đi theo pull request riêng để giữ review và CI độc lập.
+
+## Phê duyệt CI khi cần
+
+Repository không lưu credential GitHub riêng cho workflow đồng bộ. Nếu GitHub đánh dấu lần chạy CI của pull request tự động là **action required**, một quản trị viên phê duyệt lần chạy đó trong tab Actions. Sau khi hai check bắt buộc thành công, auto-merge đã bật sẽ tự hợp nhất pull request tài liệu. Đây là bước xác nhận an toàn do GitHub áp dụng cho pull request do workflow tạo.
