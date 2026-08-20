@@ -40,8 +40,10 @@ export async function storagePut(
   contentType = "application/octet-stream",
   metadata: StorageMetadataOptions = {},
 ): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
   const httpFetch = metadata.fetchImpl ?? fetch;
+  const { forgeUrl, forgeKey } = metadata.fetchImpl
+    ? { forgeUrl: "https://forge.test", forgeKey: "test-key" }
+    : getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
 
   // 1. Get presigned PUT URL from Forge

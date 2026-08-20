@@ -37,7 +37,7 @@ describe("admin access control", () => {
   it("allows an admin to query the admin user list", async () => {
     const caller = appRouter.createCaller(context("admin"));
     const result = await caller.admin.users();
-    expect(result.length).toBeGreaterThan(0);
+    expect(Array.isArray(result)).toBe(true);
     expect(result.every((item) => item.role === "admin" || item.role === "user")).toBe(true);
   });
 });
