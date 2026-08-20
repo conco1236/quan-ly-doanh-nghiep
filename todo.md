@@ -596,6 +596,6 @@
 
 ## Đồng bộ GitHub
 
-- [ ] Kiểm tra remote, nhánh và thay đổi cục bộ
-- [ ] Commit phiên bản ERP đã kiểm thử
-- [ ] Đẩy commit lên GitHub và xác minh trạng thái đồng bộ
+- [x] Kiểm tra remote, nhánh và thay đổi cục bộ
+- [x] Commit phiên bản ERP đã kiểm thử
+- [x] Đẩy commit lên GitHub và xác minh trạng thái đồng bộ
