@@ -599,3 +599,9 @@
 - [x] Kiểm tra remote, nhánh và thay đổi cục bộ
 - [x] Commit phiên bản ERP đã kiểm thử
 - [x] Đẩy commit lên GitHub và xác minh trạng thái đồng bộ
+
+## GitHub Actions CI
+
+- [x] Kiểm tra scripts và phiên bản runtime dùng cho CI
+- [x] Tạo workflow Vitest, TypeScript và production build
+- [ ] Xác minh workflow trên GitHub sau push
