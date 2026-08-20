@@ -26,7 +26,14 @@ function stagingContext(): TrpcContext {
       updatedAt: new Date(),
       lastSignedIn: new Date(),
     },
-    req: { protocol: "http", headers: {} } as TrpcContext["req"],
+    req: {
+      protocol: "http",
+      headers: {
+        "x-forwarded-for": "127.0.0.1",
+        "user-agent": "staging-integration-test",
+        "x-device-id": "staging-integration-device",
+      },
+    } as TrpcContext["req"],
     res: {} as TrpcContext["res"],
     accessMode: "full",
   };
