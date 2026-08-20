@@ -528,3 +528,11 @@
 - [x] Tách module báo cáo ít dùng khỏi dashboard chính
 - [x] Bổ sung test hồi quy và đo lại bundle khởi tạo
 - [x] Lưu checkpoint tối ưu tiếp theo
+
+## Manual chunks biểu đồ và UI quản trị
+
+- [x] Phân tích dependency biểu đồ/UI và asset graph production
+- [x] Cấu hình manual chunks phù hợp trong Vite
+- [x] Bổ sung regression test và kiểm tra tải dashboard
+- [x] Đo bundle/chunk sau tối ưu
+- [x] Lưu checkpoint tối ưu build

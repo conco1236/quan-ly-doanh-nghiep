@@ -167,6 +167,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("/recharts/")) return "charts";
+          if (id.includes("/@radix-ui/") || id.includes("/cmdk/") || id.includes("/vaul/") || id.includes("/input-otp/") || id.includes("/react-day-picker/") || id.includes("/embla-carousel-react/")) return "admin-ui";
+          if (id.includes("/lucide-react/")) return "ui-icons";
+        },
+      },
+    },
   },
   server: {
     host: true,
