@@ -637,3 +637,10 @@
 - [x] Triển khai workflow auto-merge an toàn sau khi CI đạt
 - [x] Không cấp credential GitHub riêng theo quyết định người dùng; giữ phương án phê duyệt CI thủ công khi GitHub yêu cầu
 - [x] Xác minh auto-merge và tài liệu vận hành
+
+## GitHub Project theo dõi yêu cầu
+
+- [x] Kiểm tra quyền Projects và các issue requirement hiện có
+- [x] Thiết kế board cùng trạng thái theo dõi yêu cầu
+- [x] Tạo Project và tự động thêm issue requirement
+- [x] Xác minh board, luồng tự động và cập nhật tài liệu
