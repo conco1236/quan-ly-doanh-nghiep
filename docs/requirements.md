@@ -7,3 +7,4 @@ Tài liệu này là nguồn theo dõi các yêu cầu đã được chủ sở 
 | RQ-3 | 2026-08-20 04:26:01.659Z | [Kiểm chứng] Đồng bộ nhật ký yêu cầu tự động | [#3](https://github.com/conco1236/quan-ly-doanh-nghiep/issues/3) | Đã ghi nhận |
 | RQ-3 | 2026-08-20 04:26:02.852Z | [Kiểm chứng] Đồng bộ nhật ký yêu cầu tự động | [#3](https://github.com/conco1236/quan-ly-doanh-nghiep/issues/3) | Đã ghi nhận |
 | RQ-3 | 2026-08-20 04:26:38.526Z | [Kiểm chứng] Đồng bộ nhật ký yêu cầu tự động | [#3](https://github.com/conco1236/quan-ly-doanh-nghiep/issues/3) | Đã ghi nhận |
+| RQ-5 | 2026-08-20 04:30:50.638Z | [Yêu cầu] Tự động đồng bộ yêu cầu lên GitHub | [#5](https://github.com/conco1236/quan-ly-doanh-nghiep/issues/5) | Đã ghi nhận |
