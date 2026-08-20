@@ -577,3 +577,11 @@
 - [x] Tách panel KCS/QC thành mô-đun lazy-load
 - [x] Bổ sung test hồi quy vận hành và đo bundle
 - [x] Lưu checkpoint tách chunk vận hành
+
+## Tách table module dùng chung
+
+- [x] Khảo sát ModuleTable, VirtualizedTable và các phân hệ còn dùng chung trong Home
+- [x] Trích table module dùng chung thành component độc lập
+- [x] Tách các phân hệ danh mục/đơn hàng/khách hàng thành chunk theo nhu cầu
+- [x] Bổ sung test hồi quy CRUD/liên kết chéo và đo bundle
+- [x] Lưu checkpoint tối ưu orchestration
