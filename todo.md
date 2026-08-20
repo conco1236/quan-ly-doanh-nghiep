@@ -520,3 +520,11 @@
 - [x] Cập nhật luồng xuất và xem trước PDF để chờ mô-đun bất đồng bộ
 - [x] Bổ sung test hồi quy và xác minh giảm bundle ban đầu
 - [x] Lưu checkpoint tối ưu hiệu suất
+
+## Tối ưu lazy load html2canvas và báo cáo
+
+- [x] Phân tích html2canvas và module báo cáo còn trong bundle khởi tạo
+- [x] Lazy load html2canvas theo thao tác cần render ảnh
+- [x] Tách module báo cáo ít dùng khỏi dashboard chính
+- [x] Bổ sung test hồi quy và đo lại bundle khởi tạo
+- [x] Lưu checkpoint tối ưu tiếp theo
