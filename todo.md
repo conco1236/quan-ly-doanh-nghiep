@@ -604,4 +604,4 @@
 
 - [x] Kiểm tra scripts và phiên bản runtime dùng cho CI
 - [x] Tạo workflow Vitest, TypeScript và production build
-- [ ] Xác minh workflow trên GitHub sau push
+- [x] Xác minh workflow trên GitHub sau push
